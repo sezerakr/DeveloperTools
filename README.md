@@ -3,6 +3,8 @@
 Everyday developer tools in one fast app, for **Windows**, **Linux** and the **browser**.
 Everything runs locally: nothing you paste or open is uploaded.
 
+**Try it in your browser:** https://sezerakr.github.io/DeveloperTools/
+
 | Tool | What it does |
 | --- | --- |
 | **Markdown** | Browse folders of `.md` files, preview, edit, split view, task checkboxes, code highlighting, search |
@@ -22,7 +24,7 @@ Get the latest build from [Releases](../../releases):
 
 - **Windows (x64):** unzip and run `DeveloperTools.exe`.
 - **Linux (x64):** extract, then `./install.sh` to add it to your app menu, or run `./DeveloperTools`.
-- **Browser:** unzip `…-web.zip` onto any static web host. Links like `/#json` or `/#diff` open a tool directly.
+- **Browser:** use https://sezerakr.github.io/DeveloperTools/ (links like `#json` or `#diff` open a tool directly), or unzip `…-web.zip` onto any static web host.
 
 The desktop builds are compiled to native code (no .NET runtime needed, starts in about 0.2 s).
 
@@ -56,7 +58,7 @@ dotnet publish src/DeveloperTools.Browser -c Release                  # static s
 
 ## Releases
 
-Push a version tag to build and publish all three downloads:
+Push a version tag to build all three downloads, publish the release and update the website:
 
 ```sh
 git tag v1.2.0

@@ -117,7 +117,7 @@ jobs:
             ## Downloads
             - **Windows (x64):** `DeveloperTools-${{ needs.version.outputs.value }}-win-x64.zip`. Unzip anywhere and run `DeveloperTools.exe`.
             - **Linux (x64):** `DeveloperTools-${{ needs.version.outputs.value }}-linux-x64.tar.gz`. Extract, then run `./install.sh` (adds an app-menu entry) or `./DeveloperTools`.
-            - **Browser:** `DeveloperTools-${{ needs.version.outputs.value }}-web.zip`. A static site; host the files on any web server (it needs to serve `.wasm` as `application/wasm`).
+            - **Browser:** open https://sezerakr.github.io/DeveloperTools/, or host `DeveloperTools-${{ needs.version.outputs.value }}-web.zip` on any web server (it needs to serve `.wasm` as `application/wasm`).
 
             Everything runs locally. Nothing you paste or open is sent anywhere.
           files: |
