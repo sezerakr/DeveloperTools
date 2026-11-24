@@ -1,0 +1,126 @@
+# Builds Windows (native AOT), Linux (native AOT) and the browser version (WebAssembly),
+# and publishes them as a GitHub release when a version tag (v1.2.3) is pushed.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version (e.g. 1.1.0), used for file names only"
+        required: true
+        default: "0.0.0-dev"
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      value: ${{ steps.v.outputs.value }}
+    steps:
+      - id: v
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then v="${GITHUB_REF_NAME#v}"; else v="${{ inputs.version }}"; fi
+          echo "value=$v" >> "$GITHUB_OUTPUT"
+
+  windows:
+    needs: version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "11.0.x"
+      - name: Publish (native AOT)
+        run: dotnet publish src/DeveloperTools.Desktop -c Release -r win-x64 -o out -p:Version=${{ needs.version.outputs.value }}
+      - name: Self-test
+        # The runner may not allow opening a window; report, but do not block the release.
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $p = Start-Process out/DeveloperTools.exe -ArgumentList "--selftest selftest.log" -PassThru
+          if (-not $p.WaitForExit(180000)) { Stop-Process $p -Force; throw "self-test timed out" }
+          Get-Content selftest.log
+          if ($p.ExitCode -ne 0) { throw "self-test failed" }
+      - name: Package
+        shell: pwsh
+        run: |
+          Remove-Item out/*.pdb -ErrorAction SilentlyContinue
+          Compress-Archive -Path out/* -DestinationPath DeveloperTools-${{ needs.version.outputs.value }}-win-x64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-x64
+          path: DeveloperTools-*-win-x64.zip
+
+  linux:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "11.0.x"
+      - name: Native AOT prerequisites
+        run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+      - name: Publish (native AOT)
+        run: dotnet publish src/DeveloperTools.Desktop -c Release -r linux-x64 -o out -p:Version=${{ needs.version.outputs.value }}
+      - name: Package
+        run: |
+          rm -f out/*.dbg out/*.pdb
+          cp packaging/linux/* out/
+          chmod +x out/DeveloperTools out/install.sh
+          tar -czf DeveloperTools-${{ needs.version.outputs.value }}-linux-x64.tar.gz -C out .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-x64
+          path: DeveloperTools-*-linux-x64.tar.gz
+
+  web:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "11.0.x"
+      - name: WebAssembly tools
+        run: dotnet workload install wasm-tools
+      - name: Publish (WebAssembly)
+        run: dotnet publish src/DeveloperTools.Browser -c Release -o out -p:Version=${{ needs.version.outputs.value }}
+      - name: Package
+        run: cd out/wwwroot && zip -r ../../DeveloperTools-${{ needs.version.outputs.value }}-web.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: DeveloperTools-*-web.zip
+
+  release:
+    if: github.event_name == 'push'
+    needs: [version, windows, linux, web]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: DeveloperTools ${{ needs.version.outputs.value }}
+          generate_release_notes: true
+          body: |
+            ## Downloads
+            - **Windows (x64):** `DeveloperTools-${{ needs.version.outputs.value }}-win-x64.zip`. Unzip anywhere and run `DeveloperTools.exe`.
+            - **Linux (x64):** `DeveloperTools-${{ needs.version.outputs.value }}-linux-x64.tar.gz`. Extract, then run `./install.sh` (adds an app-menu entry) or `./DeveloperTools`.
+            - **Browser:** `DeveloperTools-${{ needs.version.outputs.value }}-web.zip`. A static site; host the files on any web server (it needs to serve `.wasm` as `application/wasm`).
+
+            Everything runs locally. Nothing you paste or open is sent anywhere.
+          files: |
+            DeveloperTools-*-win-x64.zip
+            DeveloperTools-*-linux-x64.tar.gz
+            DeveloperTools-*-web.zip

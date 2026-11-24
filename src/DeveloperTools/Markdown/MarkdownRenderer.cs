@@ -27,7 +27,7 @@ namespace DeveloperTools.Markdown;
 /// </summary>
 public sealed class MarkdownRenderer
 {
-    public static readonly FontFamily MonoFont = new("Cascadia Mono, Cascadia Code, Consolas, Menlo, monospace");
+    public static readonly FontFamily MonoFont = new("avares://DeveloperTools.Core/Assets/Fonts#Cascadia Mono, Consolas, Menlo, monospace");
 
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()

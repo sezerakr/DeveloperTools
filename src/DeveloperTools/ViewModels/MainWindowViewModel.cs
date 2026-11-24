@@ -98,6 +98,26 @@ public partial class MainWindowViewModel : ObservableObject
     public bool IsEncodeActive => CurrentPage is EncodePageViewModel;
     public bool IsSettingsActive => CurrentPage == Settings;
 
+    /// <summary>Opens a tool by short name (deep links, --page).</summary>
+    public void NavigateTo(string? name)
+    {
+        PageViewModel? page = name?.Trim().TrimStart('#').ToLowerInvariant() switch
+        {
+            "markdown" or "md" => Markdown,
+            "json" => Json,
+            "diff" or "compare" => Diff,
+            "regex" => Regex,
+            "timestamp" or "time" => Timestamp,
+            "text" => Text,
+            "generators" or "password" => Generators,
+            "encode" or "decode" or "base64" or "jwt" => Encode,
+            "settings" => Settings,
+            _ => null
+        };
+        if (page is not null)
+            CurrentPage = page;
+    }
+
     [RelayCommand] private void ShowMarkdown() => CurrentPage = Markdown;
     [RelayCommand] private void ShowJson() => CurrentPage = Json;
     [RelayCommand] private void ShowDiff() => CurrentPage = Diff;

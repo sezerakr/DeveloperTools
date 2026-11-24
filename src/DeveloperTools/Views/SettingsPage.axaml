@@ -95,7 +95,8 @@
                                                ToolTip.Tip="{Binding SettingsFile}" />
                                 </StackPanel>
                                 <Button Grid.Column="1" Classes="btn" Content="Show in Explorer"
-                                        Command="{Binding OpenSettingsFolderCommand}" VerticalAlignment="Center" />
+                                        Command="{Binding OpenSettingsFolderCommand}" VerticalAlignment="Center"
+                                        IsVisible="{Binding CanRevealSettings}" />
                             </Grid>
                         </StackPanel>
                     </Border>
@@ -109,9 +110,11 @@
                                 <StackPanel Spacing="4" Margin="0,0,16,0">
                                     <TextBlock Text="Folders" Classes="h3" />
                                     <TextBlock Classes="setting-desc"
-                                               Text="Each folder appears in the explorer with its subfolders. Add as many as you like." />
+                                               Text="Each folder appears in the explorer with its subfolders. Add as many as you like." IsVisible="{Binding IsDesktop}" />
+                                    <TextBlock Classes="setting-desc" IsVisible="{Binding IsBrowser}"
+                                               Text="Folders need the desktop app. In the browser, open files from the Markdown page instead." />
                                 </StackPanel>
-                                <Button Grid.Column="1" Classes="btn primary" Command="{Binding AddFolderCommand}"
+                                <Button Grid.Column="1" Classes="btn primary" Command="{Binding AddFolderCommand}" IsVisible="{Binding IsDesktop}"
                                         VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <PathIcon Data="{StaticResource Icon.Plus}" />

@@ -100,17 +100,16 @@ public partial class EncodePageViewModel : PageViewModel
     [RelayCommand]
     private async Task OpenImage()
     {
-        var path = await _dialogs.PickOpenFileAsync("Open image", "Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.bmp", "*.ico", "*.svg");
-        if (path is null)
+        var file = await _dialogs.OpenFileAsync("Open image", "Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.bmp", "*.ico", "*.svg");
+        if (file is null)
             return;
-        var info = new FileInfo(path);
-        if (info.Length > 20 * 1024 * 1024)
+        if (await StorageFiles.SizeAsync(file) > 20 * 1024 * 1024)
         {
             Error = "Images up to 20 MB can be encoded here.";
             return;
         }
-        _imageBytes = await File.ReadAllBytesAsync(path);
-        _imageName = info.Name;
+        _imageBytes = await StorageFiles.ReadBytesAsync(file);
+        _imageName = file.Name;
         Run();
     }
 
@@ -119,9 +118,9 @@ public partial class EncodePageViewModel : PageViewModel
     {
         if (_imageBytes is null)
             return;
-        var path = await _dialogs.PickSaveFileAsync("Save image", "image." + _imageExtension, _imageExtension, "Image");
-        if (path is not null)
-            await File.WriteAllBytesAsync(path, _imageBytes);
+        var file = await _dialogs.SaveFileAsync("Save image", "image." + _imageExtension, _imageExtension, "Image");
+        if (file is not null)
+            await StorageFiles.WriteBytesAsync(file, _imageBytes);
     }
 
     private void ShowImage(byte[] bytes)

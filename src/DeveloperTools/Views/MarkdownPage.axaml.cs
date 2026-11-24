@@ -181,7 +181,7 @@ public partial class MarkdownPage : UserControl
     {
         PathText.IsVisible = width >= 820;
         SaveLabel.IsVisible = width >= 560;
-        RevealButton.IsVisible = width >= 480;
+        RevealButton.IsVisible = width >= 480 && !DeveloperTools.Services.AppServices.IsBrowser;
         ActionsSeparator.IsVisible = width >= 480;
         ApplyPreviewMargins();
     }

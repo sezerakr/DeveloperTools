@@ -371,20 +371,19 @@ public partial class DiffPage : UserControl
     {
         if (_vm is null)
             return;
-        var files = e.DataTransfer.TryGetFiles();
-        var paths = files?.Select(f => f.TryGetLocalPath()).Where(p => p is not null).Cast<string>().ToList();
-        if (paths is null || paths.Count == 0)
+        var files = e.DataTransfer.TryGetFiles()?.OfType<IStorageFile>().ToList();
+        if (files is null || files.Count == 0)
             return;
         e.Handled = true;
 
-        if (paths.Count >= 2)
+        if (files.Count >= 2)
         {
             // Two files dropped at once: left and right.
-            await _vm.LoadFileAsync(paths[0], left: true);
-            await _vm.LoadFileAsync(paths[1], left: false);
+            await _vm.LoadFileAsync(files[0], left: true);
+            await _vm.LoadFileAsync(files[1], left: false);
             return;
         }
 
-        await _vm.LoadFileAsync(paths[0], left: ReferenceEquals(sender, LeftEditor));
+        await _vm.LoadFileAsync(files[0], left: ReferenceEquals(sender, LeftEditor));
     }
 }

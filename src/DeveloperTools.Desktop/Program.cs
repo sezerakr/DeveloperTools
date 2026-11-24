@@ -1,9 +1,9 @@
-using Avalonia;
 using System;
+using Avalonia;
 
-namespace DeveloperTools;
+namespace DeveloperTools.Desktop;
 
-class Program
+internal static class Program
 {
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
@@ -14,6 +14,9 @@ class Program
         var test = Array.IndexOf(args, "--selftest");
         if (test >= 0)
             SelfTest.LogPath = test + 1 < args.Length ? args[test + 1] : "selftest.log";
+        var page = Array.IndexOf(args, "--page");
+        if (page >= 0 && page + 1 < args.Length)
+            DeveloperTools.Services.AppServices.StartPage = args[page + 1];
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 

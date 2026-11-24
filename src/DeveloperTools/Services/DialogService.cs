@@ -10,11 +10,18 @@ using DeveloperTools.Views;
 
 namespace DeveloperTools.Services;
 
-public sealed class DialogService(Window owner) : IDialogService
+/// <param name="topLevel">The window (desktop) or the browser top level (resolved lazily: it exists only once shown).</param>
+/// <param name="view">Used for in-app dialogs when there is no OS window.</param>
+public sealed class DialogService(Func<TopLevel?> topLevel, MainView view) : IDialogService
 {
+    private TopLevel Host => topLevel() ?? throw new InvalidOperationException("The app is not shown yet.");
+
+    private Task<DialogResult?> ShowAsync(DialogOptions options) =>
+        Host is Window window ? DialogWindow.ShowAsync(window, options) : view.ShowDialogAsync(options);
+
     public async Task<UnsavedChoice> ConfirmUnsavedAsync(string fileName)
     {
-        var result = await DialogWindow.ShowAsync(owner, new DialogOptions(
+        var result = await ShowAsync(new DialogOptions(
             "Unsaved changes",
             $"\"{fileName}\" has unsaved changes. Save them before continuing?",
             PrimaryText: "Save",
@@ -30,21 +37,23 @@ public sealed class DialogService(Window owner) : IDialogService
 
     public async Task<bool> ConfirmAsync(string title, string message, string confirmText, bool danger = false)
     {
-        var result = await DialogWindow.ShowAsync(owner, new DialogOptions(title, message, confirmText, Danger: danger));
+        var result = await ShowAsync(new DialogOptions(title, message, confirmText, Danger: danger));
         return result?.Button == "primary";
     }
 
     public async Task<string?> PromptAsync(string title, string message, string initialValue, string confirmText,
         Func<string, string?>? validate = null)
     {
-        var result = await DialogWindow.ShowAsync(owner, new DialogOptions(
+        var result = await ShowAsync(new DialogOptions(
             title, message, confirmText, HasInput: true, InitialInput: initialValue, Validate: validate));
         return result?.Input;
     }
 
     public async Task<string?> PickFolderAsync(string title)
     {
-        var folders = await owner.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        if (!Host.StorageProvider.CanPickFolder)
+            return null;
+        var folders = await Host.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
             Title = title,
             AllowMultiple = false
@@ -52,20 +61,24 @@ public sealed class DialogService(Window owner) : IDialogService
         return folders.FirstOrDefault()?.TryGetLocalPath();
     }
 
-    public async Task<string?> PickOpenFileAsync(string title, string typeName, params string[] patterns)
+    public async Task<IStorageFile?> OpenFileAsync(string title, string typeName, params string[] patterns)
     {
-        var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        if (!Host.StorageProvider.CanOpen)
+            return null;
+        var files = await Host.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = title,
             AllowMultiple = false,
             FileTypeFilter = [new FilePickerFileType(typeName) { Patterns = patterns }, FilePickerFileTypes.All]
         });
-        return files.FirstOrDefault()?.TryGetLocalPath();
+        return files.FirstOrDefault();
     }
 
-    public async Task<string?> PickSaveFileAsync(string title, string suggestedName, string extension, string typeName)
+    public async Task<IStorageFile?> SaveFileAsync(string title, string suggestedName, string extension, string typeName)
     {
-        var file = await owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        if (!Host.StorageProvider.CanSave)
+            return null;
+        return await Host.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = title,
             SuggestedFileName = suggestedName,
@@ -73,41 +86,51 @@ public sealed class DialogService(Window owner) : IDialogService
             ShowOverwritePrompt = true,
             FileTypeChoices = [new FilePickerFileType(typeName) { Patterns = ["*." + extension] }]
         });
-        return file?.TryGetLocalPath();
     }
 
     public async Task CopyToClipboardAsync(string text)
     {
-        if (owner.Clipboard is { } clipboard)
+        if (Host.Clipboard is { } clipboard)
             await clipboard.SetTextAsync(text);
     }
 
     public async Task CopyImageAsync(Avalonia.Media.Imaging.Bitmap bitmap)
     {
-        if (owner.Clipboard is { } clipboard)
+        if (Host.Clipboard is { } clipboard)
             await clipboard.SetBitmapAsync(bitmap);
     }
 
     public async Task<string?> GetClipboardTextAsync() =>
-        owner.Clipboard is { } clipboard ? await clipboard.TryGetTextAsync() : null;
+        Host.Clipboard is { } clipboard ? await clipboard.TryGetTextAsync() : null;
 
     public async Task OpenUrlAsync(string url)
     {
         if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
-            await owner.Launcher.LaunchUriAsync(uri);
+            await Host.Launcher.LaunchUriAsync(uri);
     }
 
     public void RevealInExplorer(string path)
     {
-        if (OperatingSystem.IsWindows())
+        if (OperatingSystem.IsBrowser())
+            return;
+        try
         {
-            var args = File.Exists(path) ? $"/select,\"{path}\"" : $"\"{path}\"";
-            Process.Start(new ProcessStartInfo("explorer.exe", args) { UseShellExecute = true });
+            if (OperatingSystem.IsWindows())
+            {
+                var args = File.Exists(path) ? $"/select,\"{path}\"" : $"\"{path}\"";
+                Process.Start(new ProcessStartInfo("explorer.exe", args) { UseShellExecute = true });
+            }
+            else
+            {
+                // Linux/macOS: open the containing folder in the default file manager.
+                var dir = File.Exists(path) ? Path.GetDirectoryName(path)! : path;
+                var opener = OperatingSystem.IsMacOS() ? "open" : "xdg-open";
+                Process.Start(new ProcessStartInfo(opener) { ArgumentList = { dir }, UseShellExecute = false });
+            }
         }
-        else
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
         {
-            var dir = File.Exists(path) ? Path.GetDirectoryName(path)! : path;
-            _ = owner.Launcher.LaunchUriAsync(new Uri(dir));
+            // no file manager available
         }
     }
 }

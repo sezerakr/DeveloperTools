@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Text.Json;
 using DeveloperTools.Models;
 
@@ -7,10 +6,7 @@ namespace DeveloperTools.Services;
 
 public sealed class SettingsService
 {
-    public static readonly string SettingsDirectory =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DeveloperTools");
-
-    public static readonly string SettingsFile = Path.Combine(SettingsDirectory, "settings.json");
+    private const string Name = "settings.json";
 
     public SettingsService()
     {
@@ -19,28 +15,33 @@ public sealed class SettingsService
 
     public AppSettings Current { get; }
 
+    /// <summary>Where settings live (a file path on desktop, browser storage on the web).</summary>
+    public static string Location => AppServices.Storage.Describe(Name);
+
+    public static string? LocalPath => AppServices.Storage.LocalPath(Name);
+
     /// <summary>Raised after settings were saved.</summary>
     public event EventHandler? Changed;
 
     public void Save()
     {
-        Directory.CreateDirectory(SettingsDirectory);
-        File.WriteAllText(SettingsFile, JsonSerializer.Serialize(Current, AppJsonContext.Default.AppSettings));
+        AppServices.Storage.Write(Name, JsonSerializer.Serialize(Current, AppJsonContext.Default.AppSettings));
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
     private static AppSettings Load()
     {
+        string? text = null;
         try
         {
-            if (File.Exists(SettingsFile))
-                return JsonSerializer.Deserialize(File.ReadAllText(SettingsFile), AppJsonContext.Default.AppSettings)
-                       ?? new AppSettings();
+            text = AppServices.Storage.Read(Name);
+            if (text is not null)
+                return JsonSerializer.Deserialize(text, AppJsonContext.Default.AppSettings) ?? new AppSettings();
         }
         catch (Exception)
         {
-            // Keep a copy of an unreadable file instead of silently overwriting it on the next save.
-            try { File.Copy(SettingsFile, SettingsFile + ".bak", overwrite: true); } catch { /* best effort */ }
+            // Keep a copy of unreadable settings instead of silently overwriting them on the next save.
+            try { if (text is not null) AppServices.Storage.Write(Name + ".bak", text); } catch { /* best effort */ }
         }
 
         return new AppSettings();

@@ -1,5 +1,7 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/DeveloperTools/DeveloperTools.csproj" />
+    <Project Path="src/DeveloperTools/DeveloperTools.Core.csproj" />
+    <Project Path="src/DeveloperTools.Desktop/DeveloperTools.Desktop.csproj" />
+    <Project Path="src/DeveloperTools.Browser/DeveloperTools.Browser.csproj" />
   </Folder>
 </Solution>

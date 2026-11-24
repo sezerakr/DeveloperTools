@@ -7,6 +7,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Styling;
+using DeveloperTools.Services;
 using DeveloperTools.Tools;
 using DeveloperTools.ViewModels;
 
@@ -16,11 +17,11 @@ namespace DeveloperTools;
 /// "DeveloperTools.exe --selftest log.txt": opens every page and exercises each tool in the real build
 /// (used to verify the native AOT build). Saves nothing; the theme change is not persisted.
 /// </summary>
-internal static class SelfTest
+public static class SelfTest
 {
     public static string? LogPath;
 
-    public static async Task RunAsync(Window window, MainWindowViewModel vm)
+    public static async Task RunAsync(MainWindowViewModel vm)
     {
         var log = new List<string>();
         var failures = 0;
@@ -159,12 +160,18 @@ internal static class SelfTest
         Application.Current!.RequestedThemeVariant = App.ThemeFromSetting(vm.Settings.Theme);
         GC.Collect();
         GC.WaitForPendingFinalizers();
-        var process = Process.GetCurrentProcess();
         log.Add($"Total {clock.ElapsedMilliseconds} ms, failures: {failures}");
-        log.Add($"Memory after visiting every page: working set {process.WorkingSet64 / 1048576} MB, private {process.PrivateMemorySize64 / 1048576} MB, managed heap {GC.GetTotalMemory(false) / 1048576} MB");
+        if (OperatingSystem.IsBrowser())
+            log.Add($"Managed heap after visiting every page: {GC.GetTotalMemory(false) / 1048576} MB");
+        else
+        {
+            var process = Process.GetCurrentProcess();
+            log.Add($"Memory after visiting every page: working set {process.WorkingSet64 / 1048576} MB, private {process.PrivateMemorySize64 / 1048576} MB, managed heap {GC.GetTotalMemory(false) / 1048576} MB");
+        }
 
         if (LogPath is not null)
             await File.WriteAllLinesAsync(LogPath, log);
+        AppServices.SelfTestReport?.Invoke((failures == 0 ? "SELFTEST PASSED" : $"SELFTEST FAILED ({failures})") + "\n" + string.Join("\n", log));
         (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown(failures == 0 ? 0 : 1);
     }
 }

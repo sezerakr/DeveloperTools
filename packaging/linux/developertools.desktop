@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=DeveloperTools
+Comment=Markdown, JSON, diff, regex, timestamps, text, generators and encoders
+Exec=DeveloperTools
+Icon=developertools
+Terminal=false
+Categories=Development;Utility;

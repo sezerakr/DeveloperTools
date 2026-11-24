@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Threading;
+using Avalonia.Platform.Storage;
 using AvaloniaEdit.Document;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -326,30 +327,33 @@ public partial class JsonPageViewModel : PageViewModel
 
     // ------------------------------------------------------------------ files
 
+    /// <summary>The opened/saved file (a disk file on desktop, a browser file handle on the web).</summary>
+    private IStorageFile? _file;
+
     [RelayCommand]
     private async Task Open()
     {
         if (!await ConfirmLeaveAsync())
             return;
 
-        var path = await _dialogs.PickOpenFileAsync("Open JSON file", "JSON", "*.json", "*.jsonc", "*.json5", "*.geojson", "*.har");
-        if (path is null)
+        var file = await _dialogs.OpenFileAsync("Open JSON file", "JSON", "*.json", "*.jsonc", "*.json5", "*.geojson", "*.har");
+        if (file is null)
             return;
 
         try
         {
-            var info = new FileInfo(path);
-            if (info.Length > MaxFileBytes)
+            if (await StorageFiles.SizeAsync(file) > MaxFileBytes)
             {
-                ShowNotice($"\"{info.Name}\" is larger than 100 MB, too big to open here.", error: true);
+                ShowNotice($"\"{file.Name}\" is larger than 100 MB, too big to open here.", error: true);
                 return;
             }
 
-            var text = await File.ReadAllTextAsync(path);
+            var text = await StorageFiles.ReadTextAsync(file);
             Replace(text);
             Document.UndoStack.ClearAll();
             Document.UndoStack.MarkAsOriginalFile();
-            FilePath = path;
+            _file = file;
+            FilePath = StorageFiles.Describe(file);
             Notice = null;
             GoToRequested?.Invoke(this, 0);
         }
@@ -362,42 +366,44 @@ public partial class JsonPageViewModel : PageViewModel
     [RelayCommand]
     private async Task Save()
     {
-        if (FilePath is null)
+        if (_file is null)
         {
             await SaveAs();
             return;
         }
 
-        await WriteAsync(FilePath);
+        await WriteAsync(_file);
     }
 
     [RelayCommand]
     private async Task SaveAs()
     {
-        var path = await _dialogs.PickSaveFileAsync("Save JSON", FilePath is null ? "data.json" : FileName, "json", "JSON");
-        if (path is null)
+        var file = await _dialogs.SaveFileAsync("Save JSON", FilePath is null ? "data.json" : FileName, "json", "JSON");
+        if (file is null)
             return;
-        if (await WriteAsync(path))
-            FilePath = path;
+        if (await WriteAsync(file))
+        {
+            _file = file;
+            FilePath = StorageFiles.Describe(file);
+        }
     }
 
-    private async Task<bool> WriteAsync(string path)
+    private async Task<bool> WriteAsync(IStorageFile file)
     {
         try
         {
-            await File.WriteAllTextAsync(path, Document.Text, new UTF8Encoding(false));
+            await StorageFiles.WriteTextAsync(file, Document.Text);
             Document.UndoStack.MarkAsOriginalFile();
             OnPropertyChanged(nameof(IsDirty));
-            ShowNotice($"Saved {Path.GetFileName(path)}.");
+            ShowNotice($"Saved {file.Name}.");
             return true;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
         {
             ShowNotice("Could not save: " + ex.Message, error: true);
             return false;
         }
     }
-
     /// <summary>Asks about unsaved changes to an opened file. Returns false when the user cancels.</summary>
     public async Task<bool> ConfirmLeaveAsync()
     {

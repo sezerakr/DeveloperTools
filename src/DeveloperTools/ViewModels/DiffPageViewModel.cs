@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 using AvaloniaEdit.Document;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -301,27 +302,28 @@ public partial class DiffPageViewModel : PageViewModel
 
     private async Task OpenAsync(bool left)
     {
-        var path = await _dialogs.PickOpenFileAsync(left ? "Open original file" : "Open modified file", "All files", "*.*");
-        if (path is not null)
-            await LoadFileAsync(path, left);
+        var file = await _dialogs.OpenFileAsync(left ? "Open original file" : "Open modified file", "All files", "*.*");
+        if (file is not null)
+            await LoadFileAsync(file, left);
     }
 
     /// <summary>Loads a file into one side (also used for drag and drop).</summary>
-    public async Task LoadFileAsync(string path, bool left)
+    public async Task LoadFileAsync(IStorageFile file, bool left)
     {
         try
         {
-            var info = new FileInfo(path);
-            if (info.Length > MaxFileBytes)
+            var name = file.Name;
+            var path = StorageFiles.Describe(file);
+            if (await StorageFiles.SizeAsync(file) > MaxFileBytes)
             {
-                Note = $"\"{info.Name}\" is larger than 50 MB, too big to compare here.";
+                Note = $"\"{name}\" is larger than 50 MB, too big to compare here.";
                 return;
             }
 
-            var text = await File.ReadAllTextAsync(path);
+            var text = await StorageFiles.ReadTextAsync(file);
             if (text.IndexOf('\0') >= 0)
             {
-                Note = $"\"{info.Name}\" looks like a binary file. Only text files can be compared.";
+                Note = $"\"{name}\" looks like a binary file. Only text files can be compared.";
                 return;
             }
 
@@ -330,16 +332,16 @@ public partial class DiffPageViewModel : PageViewModel
             doc.UndoStack.ClearAll();
             if (left)
             {
-                LeftName = info.Name;
+                LeftName = name;
                 LeftPath = path;
             }
             else
             {
-                RightName = info.Name;
+                RightName = name;
                 RightPath = path;
             }
 
-            if (CompareAsJson is false && info.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) &&
+            if (CompareAsJson is false && name.EndsWith(".json", StringComparison.OrdinalIgnoreCase) &&
                 (left ? RightPath : LeftPath) is { } other && other.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 CompareAsJson = true;
             Rerun();

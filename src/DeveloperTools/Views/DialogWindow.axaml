@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:DeveloperTools.Views"
         x:Class="DeveloperTools.Views.DialogWindow"
         Width="440"
         SizeToContent="Height"
@@ -8,19 +9,5 @@
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource Bg.Surface}"
         Title="DeveloperTools">
-    <StackPanel Margin="24,20,24,20" Spacing="12">
-        <TextBlock x:Name="TitleText" Classes="h3" />
-        <TextBlock x:Name="MessageText" TextWrapping="Wrap" Foreground="{DynamicResource Fg.Secondary}" />
-
-        <StackPanel x:Name="InputPanel" Spacing="6" IsVisible="False">
-            <TextBox x:Name="InputBox" />
-            <TextBlock x:Name="ErrorText" Foreground="{DynamicResource Danger}" FontSize="12" IsVisible="False" />
-        </StackPanel>
-
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
-            <Button x:Name="CancelButton" Classes="btn" Content="Cancel" />
-            <Button x:Name="SecondaryButton" Classes="btn" IsVisible="False" />
-            <Button x:Name="PrimaryButton" Classes="btn primary" />
-        </StackPanel>
-    </StackPanel>
+    <views:DialogView x:Name="Body" />
 </Window>

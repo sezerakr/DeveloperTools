@@ -16,6 +16,16 @@ public static partial class TimeTools
     [GeneratedRegex(@"^-?\d+\.\d+$")]
     private static partial Regex Decimal();
 
+    /// <summary>A day-first culture (tr-TR); falls back to invariant where it is not available (trimmed ICU data).</summary>
+    private static CultureInfo DayFirstCulture
+    {
+        get
+        {
+            try { return CultureInfo.GetCultureInfo("tr-TR"); }
+            catch (CultureNotFoundException) { return CultureInfo.InvariantCulture; }
+        }
+    }
+
     [GeneratedRegex(@"^\d{1,2}\.\d{1,2}\.\d{2,4}")]
     private static partial Regex DottedDate();
 
@@ -72,8 +82,8 @@ public static partial class TimeTools
         // Dotted dates (01.05.2024) are day-first nearly everywhere they are used.
         var dayFirst = DottedDate().IsMatch(text);
         var cultures = dayFirst
-            ? new[] { CultureInfo.GetCultureInfo("tr-TR"), CultureInfo.CurrentCulture, CultureInfo.InvariantCulture }
-            : new[] { CultureInfo.InvariantCulture, CultureInfo.CurrentCulture, CultureInfo.GetCultureInfo("tr-TR") };
+            ? new[] { DayFirstCulture, CultureInfo.CurrentCulture, CultureInfo.InvariantCulture }
+            : new[] { CultureInfo.InvariantCulture, CultureInfo.CurrentCulture, DayFirstCulture };
         foreach (var culture in cultures)
         {
             if (DateTime.TryParse(text, culture, DateTimeStyles.AllowWhiteSpaces, out var local))

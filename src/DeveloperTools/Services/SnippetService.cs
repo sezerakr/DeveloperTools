@@ -10,7 +10,7 @@ namespace DeveloperTools.Services;
 /// <summary>Saved snippets in %AppData%\DeveloperTools\snippets.json (this computer only).</summary>
 public sealed class SnippetService
 {
-    public static readonly string File = Path.Combine(SettingsService.SettingsDirectory, "snippets.json");
+    private const string Name = "snippets.json";
 
     private readonly List<Snippet> _all;
 
@@ -40,21 +40,22 @@ public sealed class SnippetService
 
     private void Save()
     {
-        Directory.CreateDirectory(SettingsService.SettingsDirectory);
-        System.IO.File.WriteAllText(File, JsonSerializer.Serialize(_all, AppJsonContext.Default.ListSnippet));
+        AppServices.Storage.Write(Name, JsonSerializer.Serialize(_all, AppJsonContext.Default.ListSnippet));
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
     private static List<Snippet> Load()
     {
+        string? text = null;
         try
         {
-            if (System.IO.File.Exists(File))
-                return JsonSerializer.Deserialize(System.IO.File.ReadAllText(File), AppJsonContext.Default.ListSnippet) ?? new();
+            text = AppServices.Storage.Read(Name);
+            if (text is not null)
+                return JsonSerializer.Deserialize(text, AppJsonContext.Default.ListSnippet) ?? new();
         }
         catch (Exception)
         {
-            try { System.IO.File.Copy(File, File + ".bak", overwrite: true); } catch { /* best effort */ }
+            try { if (text is not null) AppServices.Storage.Write(Name + ".bak", text); } catch { /* best effort */ }
         }
         return new();
     }

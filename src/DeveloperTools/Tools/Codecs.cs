@@ -341,7 +341,9 @@ public static class Codecs
                 new("HMAC-SHA384", Out(HMACSHA384.HashData(key, data))),
                 new("HMAC-SHA512", Out(HMACSHA512.HashData(key, data))),
                 new("HMAC-SHA1", Out(HMACSHA1.HashData(key, data)), "Legacy. Prefer HMAC-SHA256."),
-                new("HMAC-MD5", Out(HMACMD5.HashData(key, data)), "Legacy. Prefer HMAC-SHA256.")
+                OperatingSystem.IsBrowser()
+                    ? new CodecResult("HMAC-MD5", "Not available in the browser version.")
+                    : new CodecResult("HMAC-MD5", Out(HMACMD5.HashData(key, data)), "Legacy. Prefer HMAC-SHA256.")
             ];
         }
 
@@ -351,7 +353,10 @@ public static class Codecs
             new("SHA-384", Out(SHA384.HashData(data))),
             new("SHA-512", Out(SHA512.HashData(data))),
             new("SHA-1", Out(SHA1.HashData(data)), "Not collision-resistant. Use for checksums only."),
-            new("MD5", Out(MD5.HashData(data)), "Not secure. Use for checksums only.")
+            // MD5 is not implemented in .NET's WebAssembly runtime.
+            OperatingSystem.IsBrowser()
+                ? new CodecResult("MD5", "Not available in the browser version.")
+                : new CodecResult("MD5", Out(MD5.HashData(data)), "Not secure. Use for checksums only.")
         ];
     }
 }

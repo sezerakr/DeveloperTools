@@ -354,8 +354,8 @@ public partial class GeneratorsPageViewModel : PageViewModel
     {
         if (_qrPng is null)
             return;
-        var path = await _dialogs.PickSaveFileAsync("Save QR code", "qr-code.png", "png", "PNG image");
-        if (path is not null)
-            await File.WriteAllBytesAsync(path, _qrPng);
+        var file = await _dialogs.SaveFileAsync("Save QR code", "qr-code.png", "png", "PNG image");
+        if (file is not null)
+            await StorageFiles.WriteBytesAsync(file, _qrPng);
     }
 }

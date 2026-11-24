@@ -10,6 +10,8 @@
     <UserControl.KeyBindings>
         <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCommand}" />
         <KeyBinding Gesture="Ctrl+N" Command="{Binding NewFileCommand}" />
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenExternalCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveAsCommand}" />
         <KeyBinding Gesture="F5" Command="{Binding RefreshCommand}" />
         <KeyBinding Gesture="Ctrl+F" Command="{Binding OpenSearchCommand}" />
         <KeyBinding Gesture="F3" Command="{Binding FindNextCommand}" />
@@ -29,6 +31,9 @@
                     <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
                         <TextBlock Text="EXPLORER" Classes="label" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
+                            <Button Classes="btn ghost icon" Command="{Binding OpenExternalCommand}" ToolTip.Tip="Open a file (Ctrl+O)">
+                                <PathIcon Data="{StaticResource Icon.FolderOpen}" />
+                            </Button>
                             <Button Classes="btn ghost icon" Command="{Binding NewFileCommand}" ToolTip.Tip="New file (Ctrl+N)">
                                 <PathIcon Data="{StaticResource Icon.Plus}" />
                             </Button>
@@ -48,7 +53,14 @@
 
                 <Panel>
                     <!-- empty state: no folders configured -->
-                    <StackPanel IsVisible="{Binding !HasFolders}" Margin="20,28" Spacing="10">
+                    <StackPanel IsVisible="{Binding ShowBrowserHint}" Margin="20,28" Spacing="10">
+                        <TextBlock Text="Open your files" Classes="h3" FontSize="14" />
+                        <TextBlock TextWrapping="Wrap" Classes="secondary" FontSize="13"
+                                   Text="In the browser, pick .md files from your computer. Saving writes back to the file when your browser allows it (Chrome, Edge), or downloads a copy." />
+                        <Button Classes="btn primary" HorizontalAlignment="Left" Margin="0,6,0,0"
+                                Content="Open file" Command="{Binding OpenExternalCommand}" />
+                    </StackPanel>
+                    <StackPanel IsVisible="{Binding ShowFolderHint}" Margin="20,28" Spacing="10">
                         <TextBlock Text="No folders yet" Classes="h3" FontSize="14" />
                         <TextBlock TextWrapping="Wrap" Classes="secondary" FontSize="13"
                                    Text="Add one or more folders in Settings → Markdown. Their files will be listed here." />

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using AvaloniaEdit.Document;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -88,6 +89,80 @@ public partial class MarkdownPageViewModel : PageViewModel
     [RelayCommand]
     private void ToggleExplorer() => IsExplorerVisible = !IsExplorerVisible;
     public bool HasFolders => _settings.Current.MarkdownFolders.Count > 0;
+    public bool ShowFolderHint => !HasFolders && !AppServices.IsBrowser;
+    public bool ShowBrowserHint => !HasFolders && AppServices.IsBrowser;
+
+    // ---------------------------------------------------------------- files outside the folders
+
+    /// <summary>
+    /// Files opened through the file picker that have no local path (browser). Their text lives in a scratch
+    /// folder (the browser's in-memory file system) and is written back through the handle on save.
+    /// </summary>
+    private readonly Dictionary<string, IStorageFile> _handles = new(StringComparer.Ordinal);
+
+    private static readonly string ScratchFolder = Path.Combine(Path.GetTempPath(), "developertools-files");
+
+    [RelayCommand]
+    private async Task OpenExternal()
+    {
+        if (!await ConfirmLeaveAsync())
+            return;
+        var file = await _dialogs.OpenFileAsync("Open markdown file", "Markdown", "*.md", "*.markdown", "*.mdx", "*.txt");
+        if (file is null)
+            return;
+
+        if (file.TryGetLocalPath() is { } local)
+        {
+            IsDirty = false;
+            await OpenFileAsync(local);
+            return;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(ScratchFolder);
+            var path = Path.Combine(ScratchFolder, file.Name);
+            await File.WriteAllTextAsync(path, await StorageFiles.ReadTextAsync(file), Utf8NoBom);
+            _handles[path] = file;
+            IsDirty = false;
+            await OpenFileAsync(path);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            StatusMessage = $"Could not open {file.Name}: {e.Message}";
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(HasDocumentCheck))]
+    private async Task SaveAs()
+    {
+        if (CurrentFilePath is null)
+            return;
+        var file = await _dialogs.SaveFileAsync("Save markdown as", CurrentFileName ?? "untitled.md", "md", "Markdown");
+        if (file is null)
+            return;
+        try
+        {
+            await StorageFiles.WriteTextAsync(file, Document.Text);
+            if (file.TryGetLocalPath() is { } local)
+            {
+                IsDirty = false;
+                await RefreshAsync();
+                await OpenFileAsync(local);
+            }
+            else
+            {
+                _handles[CurrentFilePath] = file;
+                await File.WriteAllTextAsync(CurrentFilePath, Document.Text, Utf8NoBom);
+                IsDirty = false;
+            }
+            StatusMessage = $"Saved {file.Name}";
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            StatusMessage = $"Save failed: {e.Message}";
+        }
+    }
 
     [ObservableProperty]
     private FileNode? _selectedNode;
@@ -176,6 +251,8 @@ public partial class MarkdownPageViewModel : PageViewModel
     {
         _folderSignature = FolderSignature();
         OnPropertyChanged(nameof(HasFolders));
+        OnPropertyChanged(nameof(ShowFolderHint));
+        OnPropertyChanged(nameof(ShowBrowserHint));
 
         var expanded = MarkdownTree.Flatten(Roots)
             .Where(n => n.IsDirectory && n.IsExpanded)
@@ -275,6 +352,15 @@ public partial class MarkdownPageViewModel : PageViewModel
         try
         {
             await File.WriteAllTextAsync(CurrentFilePath, Document.Text, Utf8NoBom);
+            if (_handles.TryGetValue(CurrentFilePath, out var handle))
+                await StorageFiles.WriteTextAsync(handle, Document.Text); // browser: back to the picked file
+            else if (AppServices.IsBrowser)
+            {
+                // Not linked to a file on the computer yet: ask where to save it.
+                IsDirty = false;
+                await SaveAs();
+                return !IsDirty;
+            }
             IsDirty = false;
             StatusMessage = $"Saved {DateTime.Now:HH:mm:ss}";
             return true;
@@ -289,15 +375,18 @@ public partial class MarkdownPageViewModel : PageViewModel
     [RelayCommand]
     private async Task NewFile()
     {
-        if (!HasFolders)
+        if (!HasFolders && !AppServices.IsBrowser)
         {
             OpenSettingsRequested?.Invoke(this, EventArgs.Empty);
             return;
         }
 
+        if (AppServices.IsBrowser)
+            Directory.CreateDirectory(ScratchFolder);
         var folder = SelectedNode?.DirectoryPath
                      ?? CurrentFileDirectory
-                     ?? Roots.FirstOrDefault(r => !r.IsMissing)?.FullPath;
+                     ?? Roots.FirstOrDefault(r => !r.IsMissing)?.FullPath
+                     ?? (AppServices.IsBrowser ? ScratchFolder : null);
         if (folder is null || !Directory.Exists(folder))
         {
             StatusMessage = "None of the configured folders exist.";
@@ -309,7 +398,7 @@ public partial class MarkdownPageViewModel : PageViewModel
 
         var name = await _dialogs.PromptAsync(
             "New markdown file",
-            $"Create in {folder}",
+            AppServices.IsBrowser ? "Use Save to store it on your computer." : $"Create in {folder}",
             "untitled.md",
             "Create",
             input => ValidateNewFileName(folder, input));

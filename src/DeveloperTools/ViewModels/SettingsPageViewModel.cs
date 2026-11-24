@@ -123,7 +123,10 @@ public partial class SettingsPageViewModel : PageViewModel
     public IReadOnlyList<ViewMode> ViewModes { get; } = Enum.GetValues<ViewMode>();
     public IReadOnlyList<int> FontSizes { get; } = [11, 12, 13, 14, 15, 16, 18, 20, 22];
 
-    public string SettingsFile => SettingsService.SettingsFile;
+    public string SettingsFile => SettingsService.Location;
+    public bool CanRevealSettings => SettingsService.LocalPath is not null && !AppServices.IsBrowser;
+    public bool IsBrowser => AppServices.IsBrowser;
+    public bool IsDesktop => !AppServices.IsBrowser;
 
     [ObservableProperty]
     private string? _folderError;
@@ -187,7 +190,11 @@ public partial class SettingsPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private void OpenSettingsFolder() => _dialogs.RevealInExplorer(SettingsService.SettingsFile);
+    private void OpenSettingsFolder()
+    {
+        if (SettingsService.LocalPath is { } path)
+            _dialogs.RevealInExplorer(path);
+    }
 }
 
 public partial class FolderItem(string path, Action<FolderItem> remove) : ObservableObject

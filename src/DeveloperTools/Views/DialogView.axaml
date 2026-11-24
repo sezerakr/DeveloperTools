@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="DeveloperTools.Views.DialogView">
+    <Border Background="{DynamicResource Bg.Surface}" CornerRadius="10" Width="440" MaxWidth="440"
+            BorderBrush="{DynamicResource Line}" BorderThickness="1" BoxShadow="0 12 40 0 #40000000">
+        <StackPanel Margin="24,20,24,20" Spacing="12">
+            <TextBlock x:Name="TitleText" Classes="h3" />
+            <TextBlock x:Name="MessageText" TextWrapping="Wrap" Foreground="{DynamicResource Fg.Secondary}" />
+
+            <StackPanel x:Name="InputPanel" Spacing="6" IsVisible="False">
+                <TextBox x:Name="InputBox" />
+                <TextBlock x:Name="ErrorText" Foreground="{DynamicResource Danger}" FontSize="12" IsVisible="False" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+                <Button x:Name="CancelButton" Classes="btn" Content="Cancel" />
+                <Button x:Name="SecondaryButton" Classes="btn" IsVisible="False" />
+                <Button x:Name="PrimaryButton" Classes="btn primary" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>
