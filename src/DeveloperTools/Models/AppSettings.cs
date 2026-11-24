@@ -1,0 +1,45 @@
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
+namespace DeveloperTools.Models;
+
+public sealed class AppSettings
+{
+    // General
+    public string Theme { get; set; } = "System";
+    public bool DetectClipboard { get; set; } = true;
+
+    // Markdown tool
+    public List<string> MarkdownFolders { get; set; } = new();
+    public ViewMode DefaultViewMode { get; set; } = ViewMode.Preview;
+    public int EditorFontSize { get; set; } = 14;
+    public bool WordWrap { get; set; } = true;
+    public bool AutoSave { get; set; }
+
+    // JSON tool
+    /// <summary>Spaces per level; 0 means tabs.</summary>
+    public int JsonIndent { get; set; } = 2;
+    public bool JsonFormatOnPaste { get; set; } = true;
+}
+
+/// <summary>A named piece of input saved by the user for a tool (stored locally).</summary>
+public sealed class Snippet
+{
+    public string Id { get; set; } = System.Guid.NewGuid().ToString("N");
+    public string Tool { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Content { get; set; } = "";
+    public System.DateTime Created { get; set; } = System.DateTime.Now;
+}
+
+public enum ViewMode
+{
+    Preview,
+    Edit,
+    Split
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true, UseStringEnumConverter = true)]
+[JsonSerializable(typeof(AppSettings))]
+[JsonSerializable(typeof(List<Snippet>))]
+internal partial class AppJsonContext : JsonSerializerContext;

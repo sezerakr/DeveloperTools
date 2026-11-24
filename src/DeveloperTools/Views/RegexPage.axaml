@@ -1,0 +1,208 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DeveloperTools.ViewModels"
+             xmlns:c="using:DeveloperTools.Converters"
+             xmlns:ae="using:AvaloniaEdit"
+             xmlns:views="using:DeveloperTools.Views"
+             x:Class="DeveloperTools.Views.RegexPage"
+             x:DataType="vm:RegexPageViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="RadioButton.tab">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Margin" Value="0,0,18,0" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+        <Style Selector="TextBox.pattern">
+            <Setter Property="FontFamily" Value="{StaticResource Font.Mono}" />
+            <Setter Property="FontSize" Value="14.5" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="4,8" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBox.pattern:focus /template/ Border#PART_BorderElement, TextBox.pattern:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="Border.codebox">
+            <Setter Property="Background" Value="{DynamicResource Code.Bg}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Code.Border}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12,10" />
+        </Style>
+    </UserControl.Styles>
+
+    <DockPanel>
+        <!-- pattern + flags -->
+        <Border DockPanel.Dock="Top" Padding="14,10" Background="{DynamicResource Bg.Surface}"
+                BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
+            <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Border x:Name="PatternFrame" CornerRadius="7" BorderThickness="1" BorderBrush="{DynamicResource Line.Strong}"
+                            Background="{DynamicResource Bg.Subtle}" Padding="10,0">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <TextBlock Text="/" FontFamily="{StaticResource Font.Mono}" FontSize="16" Classes="muted" VerticalAlignment="Center" />
+                            <TextBox x:Name="PatternBox" Grid.Column="1" Classes="pattern" Text="{Binding Pattern}"
+                                     PlaceholderText="Regular expression, e.g. \d{4}-\d{2}-\d{2}" />
+                            <TextBlock Grid.Column="2" Text="/" FontFamily="{StaticResource Font.Mono}" FontSize="16" Classes="muted" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="12,0,0,0" VerticalAlignment="Center">
+                        <Border Classes="pill" Classes.ok="{Binding HasMatches}" Classes.error="{Binding HasError}">
+                            <TextBlock Text="{Binding Summary}" />
+                        </Border>
+                        <views:SnippetsButton DataContext="{Binding Snippets}" />
+                    </StackPanel>
+                </Grid>
+                <WrapPanel>
+                    <CheckBox Content="Ignore case" IsChecked="{Binding IgnoreCase}" Margin="0,0,16,0" ToolTip.Tip="RegexOptions.IgnoreCase (i)" />
+                    <CheckBox Content="Multiline" IsChecked="{Binding Multiline}" Margin="0,0,16,0" ToolTip.Tip="^ and $ match at every line (m)" />
+                    <CheckBox Content="Dot matches newline" IsChecked="{Binding Singleline}" Margin="0,0,16,0" ToolTip.Tip="RegexOptions.Singleline (s)" />
+                    <CheckBox Content="Ignore whitespace" IsChecked="{Binding IgnoreWhitespace}" Margin="0,0,16,0"
+                              ToolTip.Tip="Spaces in the pattern are ignored; # starts a comment (x)" />
+                    <CheckBox Content="Explicit capture" IsChecked="{Binding ExplicitCapture}" Margin="0,0,16,0"
+                              ToolTip.Tip="Only named groups capture (n)" />
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
+        <Border DockPanel.Dock="Top" Classes="notice error" IsVisible="{Binding HasError}">
+            <Grid ColumnDefinitions="Auto,*">
+                <PathIcon Data="{StaticResource Icon.Alert}" Width="14" Height="14" Margin="0,1,10,0" VerticalAlignment="Top"
+                          Foreground="{DynamicResource Danger}" />
+                <TextBlock Grid.Column="1" Text="{Binding Error}" FontSize="12.5" TextWrapping="Wrap" Foreground="{DynamicResource Fg.Primary}" />
+            </Grid>
+        </Border>
+
+        <Grid x:Name="Panes">
+            <!-- test text -->
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Height="38" Padding="14,0" Background="{DynamicResource Bg.Subtle}"
+                        BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                        <TextBlock Text="Test text" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource Fg.Primary}" />
+                        <TextBlock Grid.Column="1" Text="Matches are highlighted as you type" FontSize="12" Classes="muted" />
+                    </Grid>
+                </Border>
+                <ae:TextEditor x:Name="TestEditor" Document="{Binding TestDocument}" FontSize="{Binding EditorFontSize}"
+                               FontFamily="{StaticResource Font.Mono}" ShowLineNumbers="True" WordWrap="True" Padding="8,10,16,10"
+                               Background="{DynamicResource Bg.Surface}" Foreground="{DynamicResource Fg.Primary}"
+                               LineNumbersForeground="{DynamicResource Fg.Muted}" />
+            </DockPanel>
+
+            <!-- side panel -->
+            <Border BorderBrush="{DynamicResource Line}" BorderThickness="1,0,0,0" Background="{DynamicResource Bg.Surface}" x:Name="SidePanel">
+                <DockPanel>
+                    <Border DockPanel.Dock="Top" Padding="14,0" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1"
+                            Background="{DynamicResource Bg.Subtle}">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton Classes="tab" GroupName="regex-panel" Content="Matches"
+                                         IsChecked="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Matches}" />
+                            <RadioButton Classes="tab" GroupName="regex-panel" Content="Replace"
+                                         IsChecked="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Replace}" />
+                            <RadioButton Classes="tab" GroupName="regex-panel" Content="Code"
+                                         IsChecked="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Code}" />
+                            <RadioButton Classes="tab" GroupName="regex-panel" Content="Reference"
+                                         IsChecked="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Reference}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Panel>
+                        <!-- matches -->
+                        <DockPanel IsVisible="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Matches}">
+                            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="14,8,8,8" IsVisible="{Binding HasMatches}">
+                                <TextBlock Text="Click a match to select it in the text." FontSize="12" Classes="muted" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Classes="btn ghost xs" Content="Copy all" Command="{Binding CopyMatchesCommand}"
+                                        ToolTip.Tip="Copy every match, one per line" />
+                            </Grid>
+                            <TextBlock DockPanel.Dock="Top" Text="No matches yet." Classes="muted" FontSize="13" Margin="14,14"
+                                       IsVisible="{Binding !HasMatches}" />
+                            <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                                <ItemsControl ItemsSource="{Binding Matches}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:RegexMatchItem">
+                                            <Button Classes="btn ghost" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                    Height="NaN" CornerRadius="0" Padding="14,8" BorderThickness="0,0,0,1"
+                                                    BorderBrush="{DynamicResource Line}" Command="{Binding SelectCommand}">
+                                                <StackPanel Spacing="4">
+                                                    <Grid ColumnDefinitions="*,Auto">
+                                                        <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" Classes="secondary" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding Position}" FontSize="11.5" Classes="muted"
+                                                                   FontFamily="{StaticResource Font.Mono}" />
+                                                    </Grid>
+                                                    <TextBlock Text="{Binding Value}" FontFamily="{StaticResource Font.Mono}" FontSize="13"
+                                                               TextWrapping="Wrap" Foreground="{DynamicResource Fg.Primary}" />
+                                                    <ItemsControl ItemsSource="{Binding Groups}" IsVisible="{Binding HasGroups}" Margin="0,2,0,0">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="vm:RegexGroupItem">
+                                                                <Grid ColumnDefinitions="Auto,*" Margin="0,1">
+                                                                    <TextBlock Text="{Binding Name}" FontSize="11.5" MinWidth="70" Margin="0,0,10,0"
+                                                                               Foreground="{DynamicResource Regex.Group}" FontFamily="{StaticResource Font.Mono}" />
+                                                                    <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="12" TextWrapping="Wrap"
+                                                                               FontFamily="{StaticResource Font.Mono}" Classes="secondary" />
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </DockPanel>
+
+                        <!-- replace -->
+                        <DockPanel Margin="14" IsVisible="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Replace}">
+                            <TextBlock DockPanel.Dock="Top" Classes="field" Text="Replace with" />
+                            <TextBox DockPanel.Dock="Top" Text="{Binding Replacement}" FontFamily="{StaticResource Font.Mono}" FontSize="13"
+                                     PlaceholderText="$1, ${name}, $0 for the whole match" />
+                            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,16,0,6">
+                                <TextBlock Classes="field" Text="Result" Margin="0" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Classes="btn ghost xs" Content="Copy" Command="{Binding CopyReplaceOutputCommand}" />
+                            </Grid>
+                            <TextBox Classes="code" Text="{Binding ReplaceOutput}" IsReadOnly="True" />
+                        </DockPanel>
+
+                        <!-- code -->
+                        <ScrollViewer IsVisible="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Code}">
+                            <StackPanel Margin="14" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="field" Text="C#" Margin="0" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Classes="btn ghost xs" Content="Copy" Command="{Binding CopyCSharpCommand}" />
+                                </Grid>
+                                <Border Classes="codebox">
+                                    <SelectableTextBlock Classes="value" FontSize="12.5" Text="{Binding CsharpCode}" />
+                                </Border>
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,10,0,0">
+                                    <TextBlock Classes="field" Text="JavaScript" Margin="0" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Classes="btn ghost xs" Content="Copy" Command="{Binding CopyJavaScriptCommand}" />
+                                </Grid>
+                                <Border Classes="codebox">
+                                    <SelectableTextBlock Classes="value" FontSize="12.5" Text="{Binding JavaScriptCode}" />
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- reference -->
+                        <ScrollViewer IsVisible="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Reference}">
+                            <ItemsControl ItemsSource="{Binding ReferenceItems}" Margin="0,6">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="vm:RefItem">
+                                        <Grid ColumnDefinitions="150,*" Margin="14,5">
+                                            <SelectableTextBlock Text="{Binding Token}" FontFamily="{StaticResource Font.Mono}" FontSize="12.5"
+                                                                 Foreground="{DynamicResource Fg.Primary}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Meaning}" FontSize="12.5" Classes="secondary" TextWrapping="Wrap" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Panel>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

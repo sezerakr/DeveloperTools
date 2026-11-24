@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DeveloperTools.ViewModels"
+             xmlns:ae="using:AvaloniaEdit"
+             xmlns:views="using:DeveloperTools.Views"
+             x:Class="DeveloperTools.Views.TextPage"
+             x:DataType="vm:TextPageViewModel">
+
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Padding="12,8" Background="{DynamicResource Bg.Surface}"
+                BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="*,Auto">
+                <WrapPanel VerticalAlignment="Center">
+                    <Button Classes="btn" Margin="0,2,6,2" ToolTip.Tip="Change the case of the selection (or all text)">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource Icon.Text}" />
+                            <TextBlock Text="Case" VerticalAlignment="Center" />
+                            <PathIcon Data="{StaticResource Icon.ChevronDown}" Width="12" Height="12" />
+                        </StackPanel>
+                        <Button.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                <MenuItem Header="camelCase" Command="{Binding CaseCommand}" CommandParameter="Camel" />
+                                <MenuItem Header="PascalCase" Command="{Binding CaseCommand}" CommandParameter="Pascal" />
+                                <MenuItem Header="snake_case" Command="{Binding CaseCommand}" CommandParameter="Snake" />
+                                <MenuItem Header="kebab-case" Command="{Binding CaseCommand}" CommandParameter="Kebab" />
+                                <MenuItem Header="CONSTANT_CASE" Command="{Binding CaseCommand}" CommandParameter="Constant" />
+                                <MenuItem Header="dot.case" Command="{Binding CaseCommand}" CommandParameter="Dot" />
+                                <Separator />
+                                <MenuItem Header="Title Case" Command="{Binding CaseCommand}" CommandParameter="Title" />
+                                <MenuItem Header="Sentence case" Command="{Binding CaseCommand}" CommandParameter="Sentence" />
+                                <MenuItem Header="UPPERCASE" Command="{Binding CaseCommand}" CommandParameter="Upper" />
+                                <MenuItem Header="lowercase" Command="{Binding CaseCommand}" CommandParameter="Lower" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+                    <Button Classes="btn" Margin="0,2,6,2" ToolTip.Tip="Line operations on the selection (or all text)">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource Icon.ListBullet}" />
+                            <TextBlock Text="Lines" VerticalAlignment="Center" />
+                            <PathIcon Data="{StaticResource Icon.ChevronDown}" Width="12" Height="12" />
+                        </StackPanel>
+                        <Button.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                <MenuItem Header="Sort A → Z" Command="{Binding LinesCommand}" CommandParameter="sort" />
+                                <MenuItem Header="Sort Z → A" Command="{Binding LinesCommand}" CommandParameter="sortdesc" />
+                                <MenuItem Header="Reverse order" Command="{Binding LinesCommand}" CommandParameter="reverse" />
+                                <MenuItem Header="Shuffle" Command="{Binding LinesCommand}" CommandParameter="shuffle" />
+                                <Separator />
+                                <MenuItem Header="Remove duplicates" Command="{Binding LinesCommand}" CommandParameter="unique" />
+                                <MenuItem Header="Remove duplicates (ignore case)" Command="{Binding LinesCommand}" CommandParameter="uniquei" />
+                                <MenuItem Header="Remove empty lines" Command="{Binding LinesCommand}" CommandParameter="empty" />
+                                <MenuItem Header="Trim spaces" Command="{Binding LinesCommand}" CommandParameter="trim" />
+                                <MenuItem Header="Number lines" Command="{Binding LinesCommand}" CommandParameter="number" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+                    <Border Classes="tool-sep" Margin="4,0,10,0" />
+                    <TextBlock Text="Separator" FontSize="12.5" Classes="muted" VerticalAlignment="Center" Margin="0,2,8,2" />
+                    <TextBox Text="{Binding Separator}" Width="70" FontFamily="{StaticResource Font.Mono}" FontSize="13"
+                             Margin="0,2,6,2" ToolTip.Tip="Used by Join and Split. \n means newline, \t tab." />
+                    <Button Classes="btn" Margin="0,2,6,2" Content="Join lines" Command="{Binding LinesCommand}" CommandParameter="join" />
+                    <Button Classes="btn" Margin="0,2,6,2" Content="Split to lines" Command="{Binding LinesCommand}" CommandParameter="split" />
+                    <Border Classes="tool-sep" Margin="4,0,10,0" />
+                    <CheckBox Content="Wrap" IsChecked="{Binding WordWrap}" Margin="0,2,6,2" VerticalAlignment="Center" />
+                </WrapPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Top" Margin="8,2,0,2">
+                    <views:SnippetsButton DataContext="{Binding Snippets}" />
+                    <Button Classes="btn ghost icon" Command="{Binding CopyAllCommand}" ToolTip.Tip="Copy all">
+                        <PathIcon Data="{StaticResource Icon.Copy}" />
+                    </Button>
+                    <Button Classes="btn ghost icon" Command="{Binding ClearCommand}" ToolTip.Tip="Clear">
+                        <PathIcon Data="{StaticResource Icon.Eraser}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border DockPanel.Dock="Bottom" MinHeight="30" Padding="14,6" Background="{DynamicResource Bg.Subtle}"
+                BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0">
+            <StackPanel Spacing="2">
+                <TextBlock Text="{Binding Stats}" FontSize="12" Classes="secondary" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding SelectionStats}" FontSize="12" Classes="muted"
+                           IsVisible="{Binding SelectionStats, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </StackPanel>
+        </Border>
+
+        <Panel>
+            <ae:TextEditor x:Name="Editor" Document="{Binding Document}" FontSize="{Binding EditorFontSize}"
+                           WordWrap="{Binding WordWrap}" FontFamily="{StaticResource Font.Mono}" ShowLineNumbers="True"
+                           Padding="8,12,16,12" HorizontalScrollBarVisibility="Auto"
+                           Background="{DynamicResource Bg.Surface}" Foreground="{DynamicResource Fg.Primary}"
+                           LineNumbersForeground="{DynamicResource Fg.Muted}" />
+            <TextBlock Text="Paste or type text. Case and line tools work on the selection, or on everything when nothing is selected."
+                       IsHitTestVisible="False" Classes="muted" FontSize="13" TextWrapping="Wrap" MaxWidth="420"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"
+                       IsVisible="{Binding IsEmpty}" />
+        </Panel>
+    </DockPanel>
+</UserControl>

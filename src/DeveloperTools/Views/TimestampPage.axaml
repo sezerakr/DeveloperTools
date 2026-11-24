@@ -1,0 +1,117 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DeveloperTools.ViewModels"
+             x:Class="DeveloperTools.Views.TimestampPage"
+             x:DataType="vm:TimestampPageViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Border.divider">
+            <Setter Property="Height" Value="1" />
+            <Setter Property="Background" Value="{DynamicResource Line}" />
+        </Style>
+        <Style Selector="TextBlock.big">
+            <Setter Property="FontFamily" Value="{StaticResource Font.Mono}" />
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource Fg.Primary}" />
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="28,24,28,40" MaxWidth="1100" Spacing="16">
+
+            <!-- live clock -->
+            <Border Classes="card" Padding="20,16">
+                <WrapPanel>
+                    <StackPanel Margin="0,0,40,8" Spacing="2">
+                        <TextBlock Classes="label" Text="NOW · UNIX SECONDS" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <SelectableTextBlock Classes="big" Text="{Binding NowSeconds}" FontFamily="{StaticResource Font.Mono}"
+                                                 FontSize="22" FontWeight="SemiBold" Foreground="{DynamicResource Fg.Primary}" />
+                            <Button Classes="btn ghost icon" Command="{Binding CopyNowSecondsCommand}" ToolTip.Tip="Copy" VerticalAlignment="Center">
+                                <PathIcon Data="{StaticResource Icon.Copy}" />
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,40,8" Spacing="2">
+                        <TextBlock Classes="label" Text="MILLISECONDS" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <SelectableTextBlock Text="{Binding NowMillis}" FontFamily="{StaticResource Font.Mono}" FontSize="22"
+                                                 Foreground="{DynamicResource Fg.Secondary}" />
+                            <Button Classes="btn ghost icon" Command="{Binding CopyNowMillisCommand}" ToolTip.Tip="Copy" VerticalAlignment="Center">
+                                <PathIcon Data="{StaticResource Icon.Copy}" />
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,0,8" Spacing="2">
+                        <TextBlock Classes="label" Text="ISO 8601 (UTC)" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <SelectableTextBlock Text="{Binding NowIso}" FontFamily="{StaticResource Font.Mono}" FontSize="22"
+                                                 Foreground="{DynamicResource Fg.Secondary}" />
+                            <Button Classes="btn ghost icon" Command="{Binding CopyNowIsoCommand}" ToolTip.Tip="Copy" VerticalAlignment="Center">
+                                <PathIcon Data="{StaticResource Icon.Copy}" />
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </WrapPanel>
+            </Border>
+
+            <!-- converter -->
+            <Border Classes="card">
+                <StackPanel>
+                    <StackPanel Margin="20,16,20,14" Spacing="12">
+                        <TextBlock Text="Convert" Classes="h3" />
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" x:Name="InputRow">
+                            <TextBox x:Name="InputBox" Text="{Binding Input}" FontFamily="{StaticResource Font.Mono}" FontSize="14"
+                                     PlaceholderText="1700000000, 1700000000000, 2024-05-01T10:00:00Z, 01.05.2024 10:00, now" />
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding Zones}" SelectedItem="{Binding Zone}" Width="240"
+                                      FontSize="13" ToolTip.Tip="Time zone for dates without an offset, and for the output" />
+                            <Button Grid.Column="2" Classes="btn" Content="Now" Command="{Binding UseNowCommand}" />
+                        </Grid>
+                        <TextBlock Text="{Binding Interpretation}" FontSize="12.5" Classes="secondary" />
+                        <TextBlock Text="{Binding Error}" IsVisible="{Binding HasError}" FontSize="12.5" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource Danger}" />
+                    </StackPanel>
+                    <Border Classes="divider" />
+                    <ItemsControl ItemsSource="{Binding Results}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:CopyableValue">
+                                <Border Classes="result" Padding="20,8,12,8">
+                                    <Grid ColumnDefinitions="170,*,Auto">
+                                        <TextBlock Text="{Binding Label}" FontSize="12.5" Classes="muted" VerticalAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <SelectableTextBlock Grid.Column="1" Classes="value" Text="{Binding Value}" VerticalAlignment="Center" />
+                                        <Button Grid.Column="2" Classes="btn ghost icon" Command="{Binding CopyCommand}" ToolTip.Tip="Copy">
+                                            <Panel>
+                                                <PathIcon Data="{StaticResource Icon.Copy}" IsVisible="{Binding IsNotCopied}" />
+                                                <PathIcon Data="{StaticResource Icon.Check}" Foreground="{DynamicResource Success}" IsVisible="{Binding IsCopied}" />
+                                            </Panel>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- difference -->
+            <Border Classes="card" Padding="20,16">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Time between two dates" Classes="h3" />
+                    <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="8">
+                        <TextBox Text="{Binding From}" FontFamily="{StaticResource Font.Mono}" FontSize="13" PlaceholderText="From" />
+                        <Button Grid.Column="1" Classes="btn ghost icon" Command="{Binding SwapDatesCommand}" ToolTip.Tip="Swap">
+                            <PathIcon Data="{StaticResource Icon.Swap}" />
+                        </Button>
+                        <TextBox Grid.Column="2" Text="{Binding To}" FontFamily="{StaticResource Font.Mono}" FontSize="13" PlaceholderText="To" />
+                    </Grid>
+                    <StackPanel Spacing="4">
+                        <SelectableTextBlock Text="{Binding DifferenceText}" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource Fg.Primary}" />
+                        <SelectableTextBlock Text="{Binding DifferenceDetail}" FontSize="12.5" Foreground="{DynamicResource Fg.Secondary}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

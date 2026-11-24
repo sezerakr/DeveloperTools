@@ -1,0 +1,27 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:f2="using:Avalonia.Themes.Fluent2"
+             x:Class="DeveloperTools.App"
+             RequestedThemeVariant="Default">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://DeveloperTools/Styles/Theme.axaml" />
+                <ResourceInclude Source="avares://DeveloperTools/Styles/Templates.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <!-- Built-in controls (ComboBox, ToggleSwitch, TreeView, TextBox) follow the neutral palette. -->
+        <Fluent2Theme>
+            <Fluent2Theme.Palettes>
+                <f2:ColorPaletteResources x:Key="Light" Accent="#18181B" RegionColor="#FFFFFF" />
+                <f2:ColorPaletteResources x:Key="Dark" Accent="#D4D4D8" RegionColor="#131315" />
+            </Fluent2Theme.Palettes>
+        </Fluent2Theme>
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+        <StyleInclude Source="avares://DeveloperTools/Styles/Controls.axaml" />
+    </Application.Styles>
+</Application>

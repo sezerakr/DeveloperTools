@@ -1,0 +1,227 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DeveloperTools.ViewModels"
+             x:Class="DeveloperTools.Views.SettingsPage"
+             x:DataType="vm:SettingsPageViewModel">
+
+    <UserControl.Styles>
+        <!-- A label + description on the left, control on the right. Stacks on narrow widths. -->
+        <Style Selector="Grid.setting">
+            <Setter Property="Margin" Value="20,14" />
+        </Style>
+        <Style Selector="Grid.setting > StackPanel">
+            <Setter Property="Spacing" Value="2" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,16,0" />
+        </Style>
+        <Style Selector="Grid.setting > ComboBox">
+            <Setter Property="Width" Value="180" />
+            <Setter Property="Grid.Column" Value="1" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Grid.setting > ToggleSwitch">
+            <Setter Property="Grid.Column" Value="1" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="OnContent" Value="" />
+            <Setter Property="OffContent" Value="" />
+            <Setter Property="MinWidth" Value="0" />
+        </Style>
+        <Style Selector="TextBlock.setting-title">
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Foreground" Value="{DynamicResource Fg.Primary}" />
+        </Style>
+        <Style Selector="TextBlock.setting-desc">
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Foreground" Value="{DynamicResource Fg.Muted}" />
+        </Style>
+        <Style Selector="Border.divider">
+            <Setter Property="Height" Value="1" />
+            <Setter Property="Background" Value="{DynamicResource Line}" />
+        </Style>
+    </UserControl.Styles>
+
+    <DockPanel>
+        <!-- tabs -->
+        <Border DockPanel.Dock="Top" Padding="28,0" Background="{DynamicResource Bg.Surface}"
+                BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal">
+                <RadioButton Classes="tab" GroupName="settings-tab" Content="General" IsChecked="{Binding IsGeneralTab}" />
+                <RadioButton Classes="tab" GroupName="settings-tab" Content="Markdown" IsChecked="{Binding IsMarkdownTab}" />
+                <RadioButton Classes="tab" GroupName="settings-tab" Content="JSON" IsChecked="{Binding IsJsonTab}" />
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <Panel Margin="28,24,28,40" MaxWidth="860" HorizontalAlignment="Stretch">
+
+                <!-- ============================================ GENERAL -->
+                <StackPanel Spacing="20" IsVisible="{Binding IsGeneralTab}">
+                    <Border Classes="card">
+                        <StackPanel>
+                            <TextBlock Text="Appearance" Classes="h3" Margin="20,16,20,4" />
+                            <Grid Classes="setting" ColumnDefinitions="*,Auto">
+                                <StackPanel>
+                                    <TextBlock Classes="setting-title" Text="Theme" />
+                                    <TextBlock Classes="setting-desc" Text="System follows your Windows light/dark setting." />
+                                </StackPanel>
+                                <ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding Theme}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="card">
+                        <StackPanel>
+                            <TextBlock Text="Clipboard" Classes="h3" Margin="20,16,20,4" />
+                            <Grid Classes="setting" ColumnDefinitions="*,Auto">
+                                <StackPanel>
+                                    <TextBlock Classes="setting-title" Text="Suggest a tool for clipboard content" />
+                                    <TextBlock Classes="setting-desc" Text="When you switch to the app, it checks the clipboard for a JWT, JSON, a Unix timestamp or Base64 and offers to open it. The check runs only on this computer and nothing is stored." />
+                                </StackPanel>
+                                <ToggleSwitch IsChecked="{Binding DetectClipboard}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="card">
+                        <StackPanel>
+                            <TextBlock Text="Storage" Classes="h3" Margin="20,16,20,4" />
+                            <Grid Classes="setting" ColumnDefinitions="*,Auto">
+                                <StackPanel>
+                                    <TextBlock Classes="setting-title" Text="Settings file" />
+                                    <TextBlock Classes="setting-desc" Text="{Binding SettingsFile}"
+                                               TextWrapping="NoWrap" TextTrimming="PrefixCharacterEllipsis"
+                                               ToolTip.Tip="{Binding SettingsFile}" />
+                                </StackPanel>
+                                <Button Grid.Column="1" Classes="btn" Content="Show in Explorer"
+                                        Command="{Binding OpenSettingsFolderCommand}" VerticalAlignment="Center" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- ============================================ MARKDOWN -->
+                <StackPanel Spacing="20" IsVisible="{Binding IsMarkdownTab}">
+                    <Border Classes="card">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="*,Auto" Margin="20,16">
+                                <StackPanel Spacing="4" Margin="0,0,16,0">
+                                    <TextBlock Text="Folders" Classes="h3" />
+                                    <TextBlock Classes="setting-desc"
+                                               Text="Each folder appears in the explorer with its subfolders. Add as many as you like." />
+                                </StackPanel>
+                                <Button Grid.Column="1" Classes="btn primary" Command="{Binding AddFolderCommand}"
+                                        VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <PathIcon Data="{StaticResource Icon.Plus}" />
+                                        <TextBlock Text="Add folder" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <Border Classes="divider" />
+
+                            <TextBlock Text="{Binding FolderError}"
+                                       IsVisible="{Binding FolderError, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                       Foreground="{DynamicResource Danger}" FontSize="12.5" Margin="20,12,20,0" />
+
+                            <TextBlock Text="No folders added yet." Classes="muted" FontSize="13"
+                                       Margin="20,18" IsVisible="{Binding HasNoFolders}" />
+
+                            <ItemsControl ItemsSource="{Binding Folders}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="vm:FolderItem">
+                                        <Border Padding="20,10" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <PathIcon Grid.Column="0" Width="16" Height="16" Margin="0,0,12,0"
+                                                          Data="{StaticResource Icon.Folder}" Foreground="{DynamicResource Fg.Muted}" />
+                                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="Medium"
+                                                                   Foreground="{DynamicResource Fg.Primary}"
+                                                                   TextTrimming="CharacterEllipsis" />
+                                                        <Border Classes="badge" IsVisible="{Binding IsMissing}">
+                                                            <TextBlock Text="not found" />
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Path}" FontSize="12" Classes="muted"
+                                                               TextTrimming="PrefixCharacterEllipsis" ToolTip.Tip="{Binding Path}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2" Classes="btn ghost icon" Command="{Binding RemoveCommand}"
+                                                        Margin="12,0,0,0" ToolTip.Tip="Remove from list (files are not deleted)">
+                                                    <PathIcon Data="{StaticResource Icon.Close}" />
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="card">
+                        <StackPanel>
+                            <TextBlock Text="Editor" Classes="h3" Margin="20,16,20,4" />
+                            <Grid Classes="setting" ColumnDefinitions="*,Auto">
+                                <StackPanel>
+                                    <TextBlock Classes="setting-title" Text="Default view" />
+                                    <TextBlock Classes="setting-desc" Text="The mode used when the app starts." />
+                                </StackPanel>
+                                <ComboBox ItemsSource="{Binding ViewModes}" SelectedItem="{Binding DefaultViewMode}" />
+                            </Grid>
+                            <Border Classes="divider" Margin="20,0" />
+                            <Grid Classes="setting" ColumnDefinitions="*,Auto">
+                                <StackPanel>
+                                    <TextBlock Classes="setting-title" Text="Font size" />
+                                    <TextBlock Classes="setting-desc" Text="Text size in the editor." />
+                                </StackPanel>
+                                <ComboBox ItemsSource="{Binding FontSizes}" SelectedItem="{Binding EditorFontSize}" />
+                            </Grid>
+                            <Border Classes="divider" Margin="20,0" />
+                            <Grid Classes="setting" ColumnDefinitions="*,Auto">
+                                <StackPanel>
+                                    <TextBlock Classes="setting-title" Text="Wrap long lines" />
+                                    <TextBlock Classes="setting-desc" Text="Wrap lines to the editor width instead of scrolling sideways." />
+                                </StackPanel>
+                                <ToggleSwitch IsChecked="{Binding WordWrap}" />
+                            </Grid>
+                            <Border Classes="divider" Margin="20,0" />
+                            <Grid Classes="setting" ColumnDefinitions="*,Auto">
+                                <StackPanel>
+                                    <TextBlock Classes="setting-title" Text="Auto save" />
+                                    <TextBlock Classes="setting-desc" Text="Save changes automatically a second after you stop typing or tick a task." />
+                                </StackPanel>
+                                <ToggleSwitch IsChecked="{Binding AutoSave}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- ============================================ JSON -->
+                <StackPanel Spacing="20" IsVisible="{Binding IsJsonTab}">
+                    <Border Classes="card">
+                        <StackPanel>
+                            <TextBlock Text="Formatting" Classes="h3" Margin="20,16,20,4" />
+                            <Grid Classes="setting" ColumnDefinitions="*,Auto">
+                                <StackPanel>
+                                    <TextBlock Classes="setting-title" Text="Indentation" />
+                                    <TextBlock Classes="setting-desc" Text="Used by Format, Repair and Sort keys." />
+                                </StackPanel>
+                                <ComboBox ItemsSource="{Binding JsonIndents}" SelectedItem="{Binding JsonIndent}" />
+                            </Grid>
+                            <Border Classes="divider" Margin="20,0" />
+                            <Grid Classes="setting" ColumnDefinitions="*,Auto">
+                                <StackPanel>
+                                    <TextBlock Classes="setting-title" Text="Format pasted JSON" />
+                                    <TextBlock Classes="setting-desc" Text="When you paste valid JSON into an empty editor, format it right away. Ctrl+Z restores the original." />
+                                </StackPanel>
+                                <ToggleSwitch IsChecked="{Binding JsonFormatOnPaste}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Panel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

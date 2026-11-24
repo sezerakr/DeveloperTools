@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DeveloperTools.ViewModels"
+             x:Class="DeveloperTools.Views.SnippetsButton"
+             x:DataType="vm:SnippetsViewModel">
+    <Button x:Name="Toggle" Classes="btn ghost icon" ToolTip.Tip="Snippets: save and reuse inputs">
+        <PathIcon Data="{StaticResource Icon.Bookmark}" />
+        <Button.Flyout>
+            <Flyout Placement="BottomEdgeAlignedRight">
+                <StackPanel x:Name="Body" Width="320" Spacing="10" Margin="4" x:DataType="vm:SnippetsViewModel">
+                    <TextBlock Text="Snippets" Classes="h3" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                        <TextBox x:Name="NameBox" Text="{Binding NewName}" PlaceholderText="Name for the current input" FontSize="13" />
+                        <Button Grid.Column="1" Classes="btn primary" Content="Save" Command="{Binding SaveCommand}" />
+                    </Grid>
+                    <TextBlock Classes="muted" FontSize="11.5" TextWrapping="Wrap"
+                               Text="Saved on this computer only. Don't save passwords, keys or personal data." />
+                    <Border Height="1" Background="{DynamicResource Line}" />
+                    <TextBlock Text="Nothing saved yet." Classes="muted" FontSize="12.5" IsVisible="{Binding HasNoItems}" Margin="0,2" />
+                    <ScrollViewer MaxHeight="320" IsVisible="{Binding HasItems}">
+                        <ItemsControl ItemsSource="{Binding Items}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:SnippetItem">
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,2">
+                                        <Button Classes="btn ghost" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                                Height="NaN" Padding="8,6" Command="{Binding LoadCommand}">
+                                            <StackPanel Spacing="1">
+                                                <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="Medium"
+                                                           Foreground="{DynamicResource Fg.Primary}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Info}" FontSize="11.5" Classes="muted" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Grid.Column="1" Classes="btn ghost icon" Command="{Binding DeleteCommand}" ToolTip.Tip="Delete"
+                                                VerticalAlignment="Center">
+                                            <PathIcon Data="{StaticResource Icon.Delete}" />
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+            </Flyout>
+        </Button.Flyout>
+    </Button>
+</UserControl>

@@ -1,0 +1,289 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DeveloperTools.ViewModels"
+             xmlns:m="using:DeveloperTools.Models"
+             xmlns:ae="using:AvaloniaEdit"
+             xmlns:views="using:DeveloperTools.Views"
+             x:Class="DeveloperTools.Views.MarkdownPage"
+             x:DataType="vm:MarkdownPageViewModel">
+
+    <UserControl.KeyBindings>
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCommand}" />
+        <KeyBinding Gesture="Ctrl+N" Command="{Binding NewFileCommand}" />
+        <KeyBinding Gesture="F5" Command="{Binding RefreshCommand}" />
+        <KeyBinding Gesture="Ctrl+F" Command="{Binding OpenSearchCommand}" />
+        <KeyBinding Gesture="F3" Command="{Binding FindNextCommand}" />
+        <KeyBinding Gesture="Shift+F3" Command="{Binding FindPreviousCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+E" Command="{Binding ToggleExplorerCommand}" />
+    </UserControl.KeyBindings>
+
+    <Grid x:Name="PageGrid" ColumnDefinitions="264,Auto,*">
+
+        <!-- ================================================= explorer -->
+        <Border x:Name="ExplorerPane" Grid.Column="0"
+                Background="{DynamicResource Bg.Surface}"
+                BorderBrush="{DynamicResource Line}" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Height="48" Padding="16,0,8,0"
+                        BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                        <TextBlock Text="EXPLORER" Classes="label" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
+                            <Button Classes="btn ghost icon" Command="{Binding NewFileCommand}" ToolTip.Tip="New file (Ctrl+N)">
+                                <PathIcon Data="{StaticResource Icon.Plus}" />
+                            </Button>
+                            <Button Classes="btn ghost icon" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh (F5)">
+                                <PathIcon Data="{StaticResource Icon.Refresh}" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border DockPanel.Dock="Bottom" Height="28" Padding="16,0"
+                        BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0">
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="11.5" Classes="muted"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding StatusMessage}" />
+                </Border>
+
+                <Panel>
+                    <!-- empty state: no folders configured -->
+                    <StackPanel IsVisible="{Binding !HasFolders}" Margin="20,28" Spacing="10">
+                        <TextBlock Text="No folders yet" Classes="h3" FontSize="14" />
+                        <TextBlock TextWrapping="Wrap" Classes="secondary" FontSize="13"
+                                   Text="Add one or more folders in Settings → Markdown. Their files will be listed here." />
+                        <Button Classes="btn primary" HorizontalAlignment="Left" Margin="0,6,0,0"
+                                Content="Add folders" Command="{Binding OpenSettingsCommand}" />
+                    </StackPanel>
+
+                    <TreeView Classes="explorer"
+                              IsVisible="{Binding HasFolders}"
+                              ItemsSource="{Binding Roots}"
+                              SelectedItem="{Binding SelectedNode}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              Padding="6,6">
+                        <TreeView.Styles>
+                            <Style Selector="TreeViewItem" x:DataType="m:FileNode">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                            </Style>
+                        </TreeView.Styles>
+                        <TreeView.ItemTemplate>
+                            <TreeDataTemplate DataType="m:FileNode" ItemsSource="{Binding Children}">
+                                <Grid ColumnDefinitions="Auto,*,Auto" Background="Transparent" ToolTip.Tip="{Binding FullPath}">
+                                    <PathIcon Grid.Column="0" Width="14" Height="14" Margin="0,0,8,0"
+                                              Data="{StaticResource Icon.Folder}"
+                                              Foreground="{DynamicResource Fg.Muted}" IsVisible="{Binding IsDirectory}" />
+                                    <PathIcon Grid.Column="0" Width="14" Height="14" Margin="0,0,8,0"
+                                              Data="{StaticResource Icon.File}"
+                                              Foreground="{DynamicResource Fg.Secondary}" IsVisible="{Binding IsFile}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}" Classes.root="{Binding IsRoot}"
+                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    <Border Grid.Column="2" Classes="badge" IsVisible="{Binding IsMissing}"
+                                            VerticalAlignment="Center" Margin="8,0,0,0">
+                                        <TextBlock Text="not found" />
+                                    </Border>
+                                </Grid>
+                            </TreeDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+
+                    <TextBlock Text="Scanning folders…" Classes="muted" FontSize="12"
+                               IsVisible="{Binding IsLoading}" Margin="20,16" />
+                </Panel>
+            </DockPanel>
+        </Border>
+
+        <GridSplitter x:Name="ExplorerSplitter" Grid.Column="1" Classes="pane" ResizeDirection="Columns" />
+
+        <!-- ================================================= document -->
+        <DockPanel x:Name="DocumentArea" Grid.Column="2" Background="{DynamicResource Bg.Surface}">
+
+            <!-- toolbar -->
+            <Border DockPanel.Dock="Top" Height="48" Padding="8,0,12,0"
+                    BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                    <Button Grid.Column="0" Classes="btn ghost icon" Command="{Binding ToggleExplorerCommand}"
+                            ToolTip.Tip="Toggle explorer (Ctrl+Shift+E)" Margin="0,0,8,0">
+                        <PathIcon Data="{StaticResource Icon.PanelLeft}" />
+                    </Button>
+
+                    <Grid Grid.Column="1" ColumnDefinitions="Auto,Auto,*" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock Grid.Column="0" Text="{Binding CurrentFileName, FallbackValue=''}"
+                                   IsVisible="{Binding HasDocument}"
+                                   FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource Fg.Primary}"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                   ToolTip.Tip="{Binding CurrentFilePath}" />
+                        <Ellipse Grid.Column="1" Classes="dirty" IsVisible="{Binding IsDirty}" VerticalAlignment="Center"
+                                 Margin="8,0,0,0" ToolTip.Tip="Unsaved changes" />
+                        <TextBlock x:Name="PathText" Grid.Column="2" Text="{Binding CurrentFileDirectory}"
+                                   FontSize="12" Classes="muted" Margin="12,0,0,0" VerticalAlignment="Center"
+                                   TextTrimming="PrefixCharacterEllipsis" ToolTip.Tip="{Binding CurrentFileDirectory}" />
+                    </Grid>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" IsVisible="{Binding HasDocument}">
+                        <Border Classes="segmented">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton Classes="segment" GroupName="viewmode" Content="Preview" IsChecked="{Binding IsPreviewMode}" />
+                                <RadioButton Classes="segment" GroupName="viewmode" Content="Edit" IsChecked="{Binding IsEditMode}" />
+                                <RadioButton x:Name="SplitButton" Classes="segment" GroupName="viewmode" Content="Split" IsChecked="{Binding IsSplitMode}" />
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="ActionsSeparator" Width="1" Height="20" Background="{DynamicResource Line}" Margin="4,0" />
+                        <Button Classes="btn ghost icon" Command="{Binding OpenSearchCommand}" ToolTip.Tip="Find (Ctrl+F)">
+                            <PathIcon Data="{StaticResource Icon.Search}" />
+                        </Button>
+                        <Button x:Name="RevealButton" Classes="btn ghost icon" Command="{Binding RevealCommand}" ToolTip.Tip="Show in Explorer">
+                            <PathIcon Data="{StaticResource Icon.OpenExternal}" />
+                        </Button>
+                        <Button Classes="btn ghost icon" Command="{Binding DeleteCommand}" ToolTip.Tip="Delete file">
+                            <PathIcon Data="{StaticResource Icon.Delete}" />
+                        </Button>
+                        <Button Classes="btn primary" Command="{Binding SaveCommand}" ToolTip.Tip="Save (Ctrl+S)">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <PathIcon Data="{StaticResource Icon.Save}" />
+                                <TextBlock x:Name="SaveLabel" Text="Save" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- find bar (Ctrl+F) -->
+            <Border x:Name="FindBar" DockPanel.Dock="Top" Padding="12,6"
+                    Background="{DynamicResource Bg.Surface}"
+                    BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1"
+                    IsVisible="{Binding IsSearchOpen}">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" VerticalAlignment="Center">
+                    <PathIcon Grid.Column="0" Width="14" Height="14" Margin="2,0,10,0"
+                              Data="{StaticResource Icon.Search}" Foreground="{DynamicResource Fg.Muted}" />
+                    <TextBox x:Name="FindBox" Grid.Column="1" Classes="find" MaxWidth="420" HorizontalAlignment="Left" MinWidth="220" Width="420"
+                             PlaceholderText="Find in document" Text="{Binding SearchText}" />
+                    <TextBlock Grid.Column="2" Text="{Binding SearchStatus}" FontSize="12" Classes="muted"
+                               VerticalAlignment="Center" Margin="12,0" MinWidth="70" />
+                    <Button Grid.Column="3" Classes="btn ghost icon" Command="{Binding FindPreviousCommand}" ToolTip.Tip="Previous (Shift+Enter)">
+                        <PathIcon Data="{StaticResource Icon.ChevronUp}" />
+                    </Button>
+                    <Button Grid.Column="4" Classes="btn ghost icon" Command="{Binding FindNextCommand}" ToolTip.Tip="Next (Enter)">
+                        <PathIcon Data="{StaticResource Icon.ChevronDown}" />
+                    </Button>
+                    <Button Grid.Column="5" Classes="btn ghost icon" Command="{Binding CloseSearchCommand}" ToolTip.Tip="Close (Esc)">
+                        <PathIcon Data="{StaticResource Icon.Close}" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- formatting bar (edit / split) -->
+            <Border x:Name="FormatBar" DockPanel.Dock="Top" Padding="10,5"
+                    Background="{DynamicResource Bg.Subtle}"
+                    BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
+                <WrapPanel>
+                    <Button Classes="btn ghost tool" Tag="h1" Click="OnFormatClick" Content="H1" ToolTip.Tip="Heading 1 (Ctrl+1)" />
+                    <Button Classes="btn ghost tool" Tag="h2" Click="OnFormatClick" Content="H2" ToolTip.Tip="Heading 2 (Ctrl+2)" />
+                    <Button Classes="btn ghost tool" Tag="h3" Click="OnFormatClick" Content="H3" ToolTip.Tip="Heading 3 (Ctrl+3)" />
+                    <Border Classes="tool-sep" />
+                    <Button Classes="btn ghost tool" Tag="bold" Click="OnFormatClick" ToolTip.Tip="Bold (Ctrl+B)">
+                        <PathIcon Data="{StaticResource Icon.Bold}" />
+                    </Button>
+                    <Button Classes="btn ghost tool" Tag="italic" Click="OnFormatClick" ToolTip.Tip="Italic (Ctrl+I)">
+                        <PathIcon Data="{StaticResource Icon.Italic}" />
+                    </Button>
+                    <Button Classes="btn ghost tool" Tag="strike" Click="OnFormatClick" ToolTip.Tip="Strikethrough (Ctrl+Shift+X)">
+                        <PathIcon Data="{StaticResource Icon.Strike}" />
+                    </Button>
+                    <Button Classes="btn ghost tool" Tag="code" Click="OnFormatClick" ToolTip.Tip="Inline code (Ctrl+E)">
+                        <PathIcon Data="{StaticResource Icon.Code}" />
+                    </Button>
+                    <Button Classes="btn ghost tool" Tag="link" Click="OnFormatClick" ToolTip.Tip="Link (Ctrl+K)">
+                        <PathIcon Data="{StaticResource Icon.Link}" />
+                    </Button>
+                    <Border Classes="tool-sep" />
+                    <Button Classes="btn ghost tool" Tag="bullet" Click="OnFormatClick" ToolTip.Tip="Bulleted list (Ctrl+Shift+8)">
+                        <PathIcon Data="{StaticResource Icon.ListBullet}" />
+                    </Button>
+                    <Button Classes="btn ghost tool" Tag="number" Click="OnFormatClick" ToolTip.Tip="Numbered list (Ctrl+Shift+7)">
+                        <PathIcon Data="{StaticResource Icon.ListNumber}" />
+                    </Button>
+                    <Button Classes="btn ghost tool" Tag="task" Click="OnFormatClick" ToolTip.Tip="Task list (Ctrl+Shift+9)">
+                        <PathIcon Data="{StaticResource Icon.Task}" />
+                    </Button>
+                    <Button Classes="btn ghost tool" Tag="quote" Click="OnFormatClick" ToolTip.Tip="Quote">
+                        <PathIcon Data="{StaticResource Icon.Quote}" />
+                    </Button>
+                    <Border Classes="tool-sep" />
+                    <Button Classes="btn ghost tool" Tag="codeblock" Click="OnFormatClick" ToolTip.Tip="Code block">
+                        <PathIcon Data="{StaticResource Icon.CodeBlock}" />
+                    </Button>
+                    <Button Classes="btn ghost tool" Tag="table" Click="OnFormatClick" ToolTip.Tip="Table">
+                        <PathIcon Data="{StaticResource Icon.Table}" />
+                    </Button>
+                    <Button Classes="btn ghost tool" Tag="rule" Click="OnFormatClick" ToolTip.Tip="Horizontal rule">
+                        <PathIcon Data="{StaticResource Icon.Rule}" />
+                    </Button>
+                </WrapPanel>
+            </Border>
+
+            <!-- status bar -->
+            <Border DockPanel.Dock="Bottom" Height="28" Padding="16,0"
+                    Background="{DynamicResource Bg.Subtle}"
+                    BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0"
+                    IsVisible="{Binding HasDocument}">
+                <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding DocumentStats}" FontSize="11.5" Classes="muted" TextTrimming="CharacterEllipsis" />
+                    <TextBlock x:Name="CaretText" Grid.Column="1" FontSize="11.5" Classes="muted" Margin="16,0,0,0" />
+                </Grid>
+            </Border>
+
+            <Panel>
+                <!-- empty state: nothing open -->
+                <StackPanel IsVisible="{Binding HasNoDocument}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Spacing="10" MaxWidth="360" Margin="24">
+                    <Border Width="44" Height="44" CornerRadius="10" Background="{DynamicResource Bg.Subtle}"
+                            BorderBrush="{DynamicResource Line}" BorderThickness="1" HorizontalAlignment="Center">
+                        <PathIcon Width="20" Height="20" Data="{StaticResource Icon.Markdown}" Foreground="{DynamicResource Fg.Muted}" />
+                    </Border>
+                    <TextBlock Text="No file open" Classes="h3" HorizontalAlignment="Center" Margin="0,6,0,0" />
+                    <TextBlock Text="Pick a file from the explorer, or create a new one." Classes="secondary"
+                               FontSize="13" TextAlignment="Center" TextWrapping="Wrap" />
+                    <Button Classes="btn" HorizontalAlignment="Center" Margin="0,6,0,0" Command="{Binding NewFileCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource Icon.Plus}" />
+                            <TextBlock Text="New file" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <Grid x:Name="DocumentGrid" ColumnDefinitions="*,Auto,*" IsVisible="{Binding HasDocument}">
+                    <Panel x:Name="EditorPanel" Grid.Column="0">
+                    <ae:TextEditor x:Name="Editor"
+                                   Document="{Binding Document}"
+                                   FontSize="{Binding EditorFontSize}"
+                                   WordWrap="{Binding WordWrap}"
+                                   FontFamily="{StaticResource Font.Mono}"
+                                   ShowLineNumbers="True"
+                                   Padding="8,12,16,12"
+                                   HorizontalScrollBarVisibility="Auto"
+                                   Background="{DynamicResource Bg.Surface}"
+                                   Foreground="{DynamicResource Fg.Primary}"
+                                   LineNumbersForeground="{DynamicResource Fg.Muted}" />
+                        <views:ScrollMarkers x:Name="EditorMarkers" HorizontalAlignment="Right" Width="12" Margin="0,14"
+                                             MarkBrush="{DynamicResource Search.Marker}"
+                                             CurrentBrush="{DynamicResource Search.MarkerCurrent}" />
+                    </Panel>
+
+                    <GridSplitter x:Name="Splitter" Grid.Column="1" Width="1"
+                                  Background="{DynamicResource Line}" ResizeDirection="Columns" />
+
+                    <ScrollViewer x:Name="PreviewScroll" Grid.Column="2"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  Background="{DynamicResource Bg.Surface}">
+                        <!-- Filled incrementally by MarkdownPage.RenderPreview (unchanged blocks are reused). -->
+                        <StackPanel x:Name="PreviewHost" MaxWidth="860" Margin="48,36,48,64" />
+                    </ScrollViewer>
+                    <views:ScrollMarkers x:Name="PreviewMarkers" Grid.Column="2" HorizontalAlignment="Right" Width="12" Margin="0,14"
+                                         MarkBrush="{DynamicResource Search.Marker}"
+                                         CurrentBrush="{DynamicResource Search.MarkerCurrent}" />
+                </Grid>
+            </Panel>
+        </DockPanel>
+    </Grid>
+</UserControl>

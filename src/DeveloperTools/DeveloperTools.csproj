@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <Version>1.1.0</Version>
+    <Product>DeveloperTools</Product>
+
+    <!-- Compiled bindings everywhere: faster, and required for trimming / native AOT. -->
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <IsAotCompatible>true</IsAotCompatible>
+
+    <!-- Lower memory: no background GC thread; only English framework resources. -->
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <TieredPGO>true</TieredPGO>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <!-- Release: native AOT (no JIT: fast start, smaller memory), trimmed. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishAot>true</PublishAot>
+    <OptimizationPreference>Speed</OptimizationPreference>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <StackTraceSupport>true</StackTraceSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+    <!-- GC: compact harder and give memory back to Windows instead of keeping it reserved. -->
+    <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="5" />
+    <RuntimeHostConfigurationOption Include="System.GC.RetainVM" Value="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.2.0" />
+    <PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.2.0" />
+    <PackageReference Include="Avalonia.Themes.Fluent2" Version="12.2.0" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.2.0" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Markdig" Version="1.6.0" />
+    <PackageReference Include="QRCoder" Version="1.9.0" />
+    <PackageReference Include="YamlDotNet" Version="18.1.0" />
+  </ItemGroup>
+</Project>

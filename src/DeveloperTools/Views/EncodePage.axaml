@@ -1,0 +1,162 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:DeveloperTools.ViewModels"
+             xmlns:c="using:DeveloperTools.Converters"
+             x:Class="DeveloperTools.Views.EncodePage"
+             x:DataType="vm:EncodePageViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Border.divider">
+            <Setter Property="Height" Value="1" />
+            <Setter Property="Background" Value="{DynamicResource Line}" />
+        </Style>
+        <Style Selector="TextBox.input">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="0,0,8,8" />
+            <Setter Property="Padding" Value="16,12" />
+        </Style>
+        <Style Selector="TextBox.input:focus /template/ Border#PART_BorderElement, TextBox.input:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+    </UserControl.Styles>
+
+    <DockPanel>
+        <!-- mode + direction -->
+        <Border DockPanel.Dock="Top" Padding="12,8" Background="{DynamicResource Bg.Surface}"
+                BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
+            <WrapPanel>
+                <Border Classes="segmented" Margin="0,2,12,2">
+                    <WrapPanel>
+                        <RadioButton Classes="segment" GroupName="codec" Content="Base64"
+                                     IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Base64}" />
+                        <RadioButton Classes="segment" GroupName="codec" Content="URL"
+                                     IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Url}" />
+                        <RadioButton Classes="segment" GroupName="codec" Content="HTML"
+                                     IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Html}" />
+                        <RadioButton Classes="segment" GroupName="codec" Content="Hex"
+                                     IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Hex}" />
+                        <RadioButton Classes="segment" GroupName="codec" Content="Unicode"
+                                     IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Unicode}" />
+                        <RadioButton Classes="segment" GroupName="codec" Content="Image"
+                                     IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Image}" />
+                        <RadioButton Classes="segment" GroupName="codec" Content="JWT"
+                                     IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Jwt}" />
+                        <RadioButton Classes="segment" GroupName="codec" Content="Hash"
+                                     IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Hash}" />
+                    </WrapPanel>
+                </Border>
+
+                <Border Classes="segmented" Margin="0,2,12,2" IsVisible="{Binding HasDirection}">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Classes="segment" GroupName="direction" Content="Encode" IsChecked="{Binding IsEncode}" />
+                        <RadioButton Classes="segment" GroupName="direction" Content="Decode" IsChecked="{Binding IsDecode}" />
+                    </StackPanel>
+                </Border>
+
+                <CheckBox Content="URL-safe" IsChecked="{Binding UrlSafe}" Margin="0,2,12,2" VerticalAlignment="Center"
+                          IsVisible="{Binding IsBase64}" ToolTip.Tip="Use - and _ instead of + and /, without = padding" />
+
+                <Border Classes="segmented" Margin="0,2,12,2" IsVisible="{Binding IsHash}">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Classes="segment" GroupName="hashfmt" Content="Hex"
+                                     IsChecked="{Binding !HashBase64}" />
+                        <RadioButton Classes="segment" GroupName="hashfmt" Content="Base64" IsChecked="{Binding HashBase64}" />
+                    </StackPanel>
+                </Border>
+
+                <Button Classes="btn" Margin="0,2,6,2" Command="{Binding SwapCommand}" IsVisible="{Binding HasDirection}"
+                        ToolTip.Tip="Use the output as input and reverse the direction">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <PathIcon Data="{StaticResource Icon.Swap}" />
+                        <TextBlock Text="Swap" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button Classes="btn ghost" Margin="0,2,6,2" Command="{Binding ClearCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <PathIcon Data="{StaticResource Icon.Eraser}" />
+                        <TextBlock Text="Clear" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </WrapPanel>
+        </Border>
+
+        <Grid x:Name="Panes" Margin="20">
+            <!-- input -->
+            <Border Classes="card">
+                <DockPanel>
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="16,12,16,10">
+                        <TextBlock Classes="h3" Text="Input" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding InputStats}" FontSize="12" Classes="muted" VerticalAlignment="Center" />
+                    </Grid>
+                    <Border DockPanel.Dock="Top" Classes="divider" />
+                    <StackPanel DockPanel.Dock="Bottom" IsVisible="{Binding IsHash}">
+                        <Border Classes="divider" />
+                        <TextBox Classes="input" Text="{Binding HmacKey}" FontFamily="{StaticResource Font.Mono}" FontSize="13"
+                                 PlaceholderText="HMAC secret (optional). Leave empty for plain hashes." />
+                    </StackPanel>
+                    <Panel>
+                        <TextBox x:Name="InputBox" Classes="code input" Text="{Binding Input}" PlaceholderText="{Binding InputHint}"
+                                 MinHeight="160" IsVisible="{Binding ShowTextInput}" />
+                        <StackPanel IsVisible="{Binding IsImageEncode}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    Spacing="10" Margin="24">
+                            <PathIcon Data="{StaticResource Icon.Image}" Width="28" Height="28" Foreground="{DynamicResource Fg.Muted}" />
+                            <TextBlock Text="Pick an image to get its Base64 and data URI." Classes="secondary" FontSize="13"
+                                       TextWrapping="Wrap" TextAlignment="Center" />
+                            <Button Classes="btn primary" HorizontalAlignment="Center" Command="{Binding OpenImageCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <PathIcon Data="{StaticResource Icon.FolderOpen}" />
+                                    <TextBlock Text="Open image" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Panel>
+                </DockPanel>
+            </Border>
+
+            <!-- output -->
+            <Border Classes="card">
+                <DockPanel>
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="16,12,16,10">
+                        <TextBlock Classes="h3" Text="Output" VerticalAlignment="Center" />
+                    </Grid>
+                    <Border DockPanel.Dock="Top" Classes="divider" />
+                    <Panel>
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel>
+                                <Border Classes="notice error" BorderThickness="0" IsVisible="{Binding HasError}" Margin="12" CornerRadius="6">
+                                    <Grid ColumnDefinitions="Auto,*">
+                                        <PathIcon Data="{StaticResource Icon.Alert}" Width="14" Height="14" Margin="0,1,10,0"
+                                                  VerticalAlignment="Top" Foreground="{DynamicResource Danger}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Error}" FontSize="12.5" TextWrapping="Wrap"
+                                                   Foreground="{DynamicResource Fg.Primary}" />
+                                    </Grid>
+                                </Border>
+                                <StackPanel IsVisible="{Binding HasImage}" Margin="16,14" Spacing="10">
+                                    <Border CornerRadius="6" BorderBrush="{DynamicResource Line}" BorderThickness="1" HorizontalAlignment="Left"
+                                            Padding="6" Background="{DynamicResource Bg.Subtle}">
+                                        <Image Source="{Binding PreviewImage}" MaxHeight="320" MaxWidth="480" Stretch="Uniform" />
+                                    </Border>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Text="{Binding ImageInfo}" FontSize="12" Classes="secondary" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                        <Button Grid.Column="1" Classes="btn" Command="{Binding SaveImageCommand}">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <PathIcon Data="{StaticResource Icon.Save}" />
+                                                <TextBlock Text="Save image" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
+                                <ItemsControl ItemsSource="{Binding Results}" ItemTemplate="{StaticResource LabeledValueRow}" />
+                            </StackPanel>
+                        </ScrollViewer>
+                        <TextBlock Text="The result appears here as you type." Classes="muted" FontSize="13"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24"
+                                   IsVisible="{Binding HasNoOutput}" />
+                    </Panel>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>
