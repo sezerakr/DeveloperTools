@@ -9,6 +9,13 @@ public sealed class AppSettings
     public string Theme { get; set; } = "System";
     public bool DetectClipboard { get; set; } = true;
 
+    // Desktop window placement (position in screen pixels, size in device-independent pixels)
+    public int? WindowX { get; set; }
+    public int? WindowY { get; set; }
+    public double? WindowWidth { get; set; }
+    public double? WindowHeight { get; set; }
+    public bool WindowMaximized { get; set; }
+
     // Markdown tool
     public List<string> MarkdownFolders { get; set; } = new();
     public ViewMode DefaultViewMode { get; set; } = ViewMode.Preview;

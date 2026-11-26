@@ -92,6 +92,27 @@ public partial class MarkdownPageViewModel : PageViewModel
     public bool ShowFolderHint => !HasFolders && !AppServices.IsBrowser;
     public bool ShowBrowserHint => !HasFolders && AppServices.IsBrowser;
 
+    /// <summary>Folders need a real file system (desktop only).</summary>
+    public bool CanAddFolders => !AppServices.IsBrowser;
+
+    /// <summary>Picks a folder and adds it to the explorer with all its subfolders and .md files.</summary>
+    [RelayCommand]
+    private async Task AddFolder()
+    {
+        var picked = await _dialogs.PickFolderAsync("Add a markdown folder");
+        if (picked is null)
+            return;
+        var path = Path.TrimEndingDirectorySeparator(Path.GetFullPath(picked));
+        if (_settings.Current.MarkdownFolders.Any(f => string.Equals(f, path, StringComparison.OrdinalIgnoreCase)))
+        {
+            StatusMessage = $"{Path.GetFileName(path)} is already in the explorer.";
+            return;
+        }
+
+        _settings.Current.MarkdownFolders.Add(path);
+        _settings.Save(); // the settings change refreshes the tree
+    }
+
     // ---------------------------------------------------------------- files outside the folders
 
     /// <summary>

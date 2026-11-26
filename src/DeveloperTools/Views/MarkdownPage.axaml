@@ -31,11 +31,20 @@
                     <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
                         <TextBlock Text="EXPLORER" Classes="label" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
-                            <Button Classes="btn ghost icon" Command="{Binding OpenExternalCommand}" ToolTip.Tip="Open a file (Ctrl+O)">
+                            <!-- folder: add a whole folder (all subfolders and .md files appear in the tree) -->
+                            <Button Classes="btn ghost icon" Command="{Binding AddFolderCommand}" IsVisible="{Binding CanAddFolders}"
+                                    ToolTip.Tip="Add a folder: shows all its subfolders and .md files">
                                 <PathIcon Data="{StaticResource Icon.FolderOpen}" />
                             </Button>
-                            <Button Classes="btn ghost icon" Command="{Binding NewFileCommand}" ToolTip.Tip="New file (Ctrl+N)">
+                            <!-- plus: single-file actions -->
+                            <Button Classes="btn ghost icon" ToolTip.Tip="Open or create a single file">
                                 <PathIcon Data="{StaticResource Icon.Plus}" />
+                                <Button.Flyout>
+                                    <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                        <MenuItem Header="Open file…" InputGesture="Ctrl+O" Command="{Binding OpenExternalCommand}" />
+                                        <MenuItem Header="New file" InputGesture="Ctrl+N" Command="{Binding NewFileCommand}" />
+                                    </MenuFlyout>
+                                </Button.Flyout>
                             </Button>
                             <Button Classes="btn ghost icon" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh (F5)">
                                 <PathIcon Data="{StaticResource Icon.Refresh}" />
@@ -65,7 +74,7 @@
                         <TextBlock TextWrapping="Wrap" Classes="secondary" FontSize="13"
                                    Text="Add one or more folders in Settings → Markdown. Their files will be listed here." />
                         <Button Classes="btn primary" HorizontalAlignment="Left" Margin="0,6,0,0"
-                                Content="Add folders" Command="{Binding OpenSettingsCommand}" />
+                                Content="Add folder" Command="{Binding AddFolderCommand}" />
                     </StackPanel>
 
                     <TreeView Classes="explorer"

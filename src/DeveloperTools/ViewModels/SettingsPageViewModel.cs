@@ -27,7 +27,22 @@ public partial class SettingsPageViewModel : PageViewModel
         _autoSave = settings.Current.AutoSave;
         foreach (var path in settings.Current.MarkdownFolders)
             Folders.Add(new FolderItem(path, RemoveFolder));
-        settings.Changed += (_, _) => OnPropertyChanged(nameof(JsonIndent)); // also changed from the JSON toolbar
+        settings.Changed += (_, _) =>
+        {
+            OnPropertyChanged(nameof(JsonIndent)); // also changed from the JSON toolbar
+            SyncFolders();                         // folders can also be added from the Markdown explorer
+        };
+    }
+
+    private void SyncFolders()
+    {
+        var current = _settings.Current.MarkdownFolders;
+        if (current.Count == Folders.Count && current.Zip(Folders).All(p => p.First == p.Second.Path))
+            return;
+        Folders.Clear();
+        foreach (var path in current)
+            Folders.Add(new FolderItem(path, RemoveFolder));
+        OnPropertyChanged(nameof(HasNoFolders));
     }
 
     public override string Title => "Settings";

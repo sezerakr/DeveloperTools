@@ -24,6 +24,8 @@ public partial class App : Application
             ApplyTheme(settings.Current.Theme);
 
             var window = new MainWindow();
+            if (SelfTest.LogPath is null) // the self-test must not move or save the user's window placement
+                window.RestorePlacement(settings);
             var viewModel = new MainWindowViewModel(settings, new DialogService(() => window, window.View));
             window.DataContext = viewModel;
             desktop.MainWindow = window;

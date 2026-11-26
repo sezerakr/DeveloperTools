@@ -13,20 +13,41 @@ namespace DeveloperTools.Views;
 /// <summary>The whole app UI: sidebar, header, pages, command palette. Hosted by a window (desktop) or the page (browser).</summary>
 public partial class MainView : UserControl
 {
-    /// <summary>Below this width the sidebar collapses to icons.</summary>
-    private const double CompactBreakpoint = 1100;
+    /// <summary>Below this width the sidebar collapses to icons (low enough that a normal window keeps the full sidebar).</summary>
+    private const double CompactBreakpoint = 900;
 
     private const double SidebarWide = 224;
     private const double SidebarCompact = 60;
 
     private bool? _wasNarrow;
     private MainWindowViewModel? _vm;
+    private double _pendingWidth;
+    private readonly DispatcherTimer _breakpointTimer;
 
     public MainView()
     {
         InitializeComponent();
         PaletteBox.AddHandler(KeyDownEvent, OnPaletteKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
-        SizeChanged += (_, e) => ApplyBreakpoint(e.NewSize.Width);
+
+        // Decide sidebar layout once resizing / DPI changes settle: switching it mid-drag or while
+        // Windows rescales the window re-lays out the whole app several times (visible lag).
+        _breakpointTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+        _breakpointTimer.Tick += (_, _) =>
+        {
+            _breakpointTimer.Stop();
+            ApplyBreakpoint(_pendingWidth);
+        };
+        SizeChanged += (_, e) =>
+        {
+            _pendingWidth = e.NewSize.Width;
+            if (_wasNarrow is null)
+            {
+                ApplyBreakpoint(_pendingWidth); // first layout: decide immediately
+                return;
+            }
+            _breakpointTimer.Stop();
+            _breakpointTimer.Start();
+        };
     }
 
     protected override void OnDataContextChanged(EventArgs e)
