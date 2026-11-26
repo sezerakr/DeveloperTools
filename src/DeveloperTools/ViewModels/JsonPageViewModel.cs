@@ -331,6 +331,53 @@ public partial class JsonPageViewModel : PageViewModel
 
     /// <summary>The opened/saved file (a disk file on desktop, a browser file handle on the web).</summary>
     private IStorageFile? _file;
+    private FileWatch? _watch;
+
+    /// <summary>Watch the opened file for changes made outside the app (desktop files only).</summary>
+    partial void OnFilePathChanged(string? value)
+    {
+        if (!FileWatch.Supported)
+            return;
+        _watch ??= new FileWatch(() => { }, () => _ = CheckFileAsync());
+        _watch.WatchFile(_file?.TryGetLocalPath());
+    }
+
+    /// <summary>Reloads when there are no unsaved edits (Ctrl+Z restores the previous text), otherwise tells the user.</summary>
+    private async Task CheckFileAsync()
+    {
+        if (_file?.TryGetLocalPath() is not { } path)
+            return;
+        if (!File.Exists(path))
+        {
+            ShowNotice(Loc.T("This file was deleted or moved outside the app. Save to write it back."), error: true);
+            return;
+        }
+
+        string text;
+        try
+        {
+            text = await FileWatch.ReadSharedAsync(path);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return; // still being written; the next change event tries again
+        }
+
+        if (text == Document.Text)
+            return; // our own save, or nothing really changed
+
+        if (!IsDirty)
+        {
+            Replace(text);
+            Document.UndoStack.MarkAsOriginalFile();
+            OnPropertyChanged(nameof(IsDirty));
+            ShowNotice(Loc.T("Reloaded: the file was changed outside the app."));
+        }
+        else
+        {
+            ShowNotice(Loc.T("This file was changed outside the app. Save to keep your version, or open it again to load the new one."), error: true);
+        }
+    }
 
     [RelayCommand]
     private async Task Open()

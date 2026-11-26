@@ -73,7 +73,106 @@ public partial class MarkdownPageViewModel : PageViewModel
             if (FolderSignature() != _folderSignature)
                 await RefreshAsync();
         };
+
+        // Changes made outside the app: refresh the tree, reload (or flag) the open file.
+        if (FileWatch.Supported)
+        {
+            _watch = new FileWatch(() => _ = RefreshAsync(), () => _ = CheckOpenFileAsync());
+            PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CurrentFilePath))
+                {
+                    _watch.WatchFile(CurrentFilePath);
+                    ExternalNotice = null;
+                }
+            };
+        }
     }
+
+    // ---------------------------------------------------------------- outside changes
+
+    private readonly FileWatch? _watch;
+
+    /// <summary>Shown when the open file changed or disappeared outside the app and cannot simply be reloaded.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasExternalNotice))]
+    private string? _externalNotice;
+
+    [ObservableProperty] private bool _externalCanReload;
+
+    public bool HasExternalNotice => ExternalNotice is not null;
+
+    /// <summary>
+    /// The open file changed on disk: reload it when there are no unsaved edits (Ctrl+Z brings back the
+    /// previous text), otherwise ask. Our own saves are ignored because the content is identical.
+    /// </summary>
+    private async Task CheckOpenFileAsync()
+    {
+        if (CurrentFilePath is not { } path)
+            return;
+        if (!File.Exists(path))
+        {
+            ExternalCanReload = false;
+            ExternalNotice = Loc.T("This file was deleted or moved outside the app. Save to write it back.");
+            return;
+        }
+
+        string text;
+        try
+        {
+            text = await FileWatch.ReadSharedAsync(path);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return; // still being written; the next change event tries again
+        }
+
+        if (path != CurrentFilePath || text == Document.Text)
+        {
+            ExternalNotice = null;
+            return;
+        }
+
+        if (!IsDirty)
+        {
+            ReplaceWithDiskText(text);
+            ExternalNotice = null;
+            StatusMessage = Loc.T("Reloaded: the file was changed outside the app.");
+            return;
+        }
+
+        ExternalCanReload = true;
+        ExternalNotice = Loc.T("This file was changed outside the app, and you have unsaved edits here.");
+    }
+
+    private void ReplaceWithDiskText(string text)
+    {
+        _suppressDirty = true;
+        Document.Replace(0, Document.TextLength, text); // one undo step: Ctrl+Z restores the previous text
+        _suppressDirty = false;
+        IsDirty = false;
+        UpdatePreview();
+    }
+
+    [RelayCommand]
+    private async Task ReloadFromDisk()
+    {
+        if (CurrentFilePath is not { } path || !File.Exists(path))
+            return;
+        try
+        {
+            ReplaceWithDiskText(await FileWatch.ReadSharedAsync(path));
+            ExternalNotice = null;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            StatusMessage = Loc.F("Could not open {0}: {1}", Path.GetFileName(path), e.Message);
+        }
+    }
+
+    /// <summary>Keep the edits made here; the next save overwrites the outside version.</summary>
+    [RelayCommand]
+    private void KeepMyVersion() => ExternalNotice = null;
 
     public override string Title => Loc.T("Markdown");
     public override string Subtitle => Loc.T("Browse, preview and edit markdown files");
@@ -300,6 +399,8 @@ public partial class MarkdownPageViewModel : PageViewModel
 
         SelectedNode = CurrentFilePath is null ? null : FindNode(CurrentFilePath);
         _suppressSelection = false;
+
+        _watch?.WatchFolders(folders);
 
         var fileCount = MarkdownTree.Flatten(Roots).Count(n => n.IsFile);
         StatusMessage = HasFolders ? Loc.F("{0} markdown files in {1} folders", fileCount, Roots.Count) : null;

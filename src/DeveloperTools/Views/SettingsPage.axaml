@@ -70,8 +70,8 @@
                                 </StackPanel>
                                 <ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding Theme}">
                                     <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock x:CompileBindings="False" Text="{Binding Converter={x:Static c:Translate.Instance}}" />
+                                        <DataTemplate x:DataType="x:String">
+                                            <TextBlock Text="{Binding Converter={x:Static c:Translate.Instance}}" />
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
@@ -243,8 +243,8 @@
                                 </StackPanel>
                                 <ComboBox ItemsSource="{Binding ViewModes}" SelectedItem="{Binding DefaultViewMode}">
                                     <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock x:CompileBindings="False" Text="{Binding Converter={x:Static c:Translate.Instance}}" />
+                                        <DataTemplate x:DataType="x:String">
+                                            <TextBlock Text="{Binding Converter={x:Static c:Translate.Instance}}" />
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
