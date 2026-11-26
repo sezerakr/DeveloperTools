@@ -110,9 +110,9 @@ public sealed class FileWatch : IDisposable
 
     private void OnTreeEvent(string path)
     {
-        // Only folders and markdown files change what the explorer shows.
-        var ext = Path.GetExtension(path);
-        if (ext.Length == 0 || MarkdownTree.IsMarkdown(path))
+        // Only folders and markdown files change what the explorer shows. A folder name may contain a dot
+        // ("notes.v2"), so existing folders are checked directly; a deleted one is only caught without a dot.
+        if (MarkdownTree.IsMarkdown(path) || Path.GetExtension(path).Length == 0 || Directory.Exists(path))
             Restart(_treeTimer);
     }
 
