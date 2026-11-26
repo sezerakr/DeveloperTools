@@ -8,6 +8,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using DeveloperTools.Markdown;
 
@@ -29,6 +30,11 @@ public sealed class PreviewSelection
     private (int Block, int Pos)? _focus;
     private readonly HashSet<SelectableTextBlock> _selected = new();
     private bool _dragging;
+    private Point _pointerInView;       // last pointer position during a drag, relative to the visible area
+    private DispatcherTimer? _edgeTimer; // keeps scrolling while the pointer is held past the top/bottom edge
+
+    private const double Edge = 28;
+    private const double WheelStep = 50;
 
     public PreviewSelection(ScrollViewer scroll, Panel host, Action<string> onLink)
     {
@@ -40,6 +46,12 @@ public sealed class PreviewSelection
         _scroll.AddHandler(InputElement.PointerPressedEvent, OnPressed, RoutingStrategies.Tunnel);
         _scroll.AddHandler(InputElement.PointerMovedEvent, OnMoved, RoutingStrategies.Bubble, handledEventsToo: true);
         _scroll.AddHandler(InputElement.PointerReleasedEvent, OnReleased, RoutingStrategies.Bubble, handledEventsToo: true);
+        _scroll.AddHandler(InputElement.PointerWheelChangedEvent, OnWheel, RoutingStrategies.Tunnel, handledEventsToo: true);
+        _scroll.AddHandler(InputElement.PointerCaptureLostEvent, (_, args) =>
+        {
+            if (ReferenceEquals(args.Source, _scroll))
+                EndDrag(); // e.g. the window lost focus mid-drag (child blocks handing over capture don't count)
+        }, RoutingStrategies.Bubble, handledEventsToo: true);
         _scroll.AddHandler(InputElement.KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
 
         var copy = new MenuItem { Header = "Copy", InputGesture = new KeyGesture(Key.C, KeyModifiers.Control) };
@@ -57,7 +69,7 @@ public sealed class PreviewSelection
     public void Reset()
     {
         _anchor = _focus = null;
-        _dragging = false;
+        EndDrag();
         _selected.Clear();
     }
 
@@ -91,6 +103,7 @@ public sealed class PreviewSelection
                 _anchor = hit;
             _focus = hit;
             _dragging = true;
+            _pointerInView = e.GetPosition(_scroll);
             e.Pointer.Capture(_scroll);
         }
 
@@ -101,27 +114,88 @@ public sealed class PreviewSelection
     {
         if (!_dragging)
             return;
+        _pointerInView = e.GetPosition(_scroll);
+        ScrollAtEdge();
+        ExtendToPointer();
+    }
 
-        // Auto-scroll when dragging past the top or bottom edge.
-        var inView = e.GetPosition(_scroll);
-        const double edge = 28;
-        if (inView.Y < edge)
-            _scroll.Offset = new Vector(_scroll.Offset.X, Math.Max(0, _scroll.Offset.Y - (edge - inView.Y)));
-        else if (inView.Y > _scroll.Bounds.Height - edge)
-            _scroll.Offset = new Vector(_scroll.Offset.X, _scroll.Offset.Y + (inView.Y - (_scroll.Bounds.Height - edge)));
+    /// <summary>
+    /// While selecting, the pointer is captured by the scroll viewer, so the wheel never reaches the part that
+    /// scrolls: scroll here instead and keep extending the selection.
+    /// </summary>
+    private void OnWheel(object? sender, PointerWheelEventArgs e)
+    {
+        if (!_dragging)
+            return;
+        e.Handled = true;
+        _pointerInView = e.GetPosition(_scroll);
+        ScrollBy(-e.Delta.Y * WheelStep);
+        ExtendToPointer();
+    }
 
-        if (HitTest(e.GetPosition(_host)) is { } hit)
+    /// <summary>Scrolls when the pointer is past the top or bottom edge; the timer repeats it while held there.</summary>
+    private void ScrollAtEdge()
+    {
+        var y = _pointerInView.Y;
+        var height = _scroll.Bounds.Height;
+        var distance = y < Edge ? y - Edge : y > height - Edge ? y - (height - Edge) : 0;
+        if (distance == 0)
+        {
+            _edgeTimer?.Stop();
+            return;
+        }
+
+        ScrollBy(Math.Clamp(distance, -60, 60) / 2); // further past the edge = faster
+        if (_edgeTimer is null)
+        {
+            _edgeTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+            _edgeTimer.Tick += (_, _) =>
+            {
+                if (!_dragging)
+                {
+                    _edgeTimer!.Stop();
+                    return;
+                }
+                ScrollAtEdge();
+                ExtendToPointer();
+            };
+        }
+        if (!_edgeTimer.IsEnabled)
+            _edgeTimer.Start();
+    }
+
+    private void ScrollBy(double dy)
+    {
+        var max = Math.Max(0, _scroll.Extent.Height - _scroll.Viewport.Height);
+        var y = Math.Clamp(_scroll.Offset.Y + dy, 0, max);
+        if (y != _scroll.Offset.Y)
+        {
+            _scroll.Offset = new Vector(_scroll.Offset.X, y);
+            _scroll.UpdateLayout(); // so the hit test below sees the new positions
+        }
+    }
+
+    /// <summary>Moves the selection end to the text under the (last known) pointer position.</summary>
+    private void ExtendToPointer()
+    {
+        if (_scroll.TranslatePoint(_pointerInView, _host) is { } point && HitTest(point) is { } hit && hit != _focus)
         {
             _focus = hit;
             Apply();
         }
     }
 
+    private void EndDrag()
+    {
+        _dragging = false;
+        _edgeTimer?.Stop();
+    }
+
     private void OnReleased(object? sender, PointerReleasedEventArgs e)
     {
         if (!_dragging)
             return;
-        _dragging = false;
+        EndDrag();
         e.Pointer.Capture(null);
 
         // A click without a drag: open the link under the pointer, if any.
