@@ -71,6 +71,28 @@
                         </StackPanel>
                     </Border>
 
+                    <Border Classes="card" IsVisible="{Binding IsDesktop}">
+                        <StackPanel>
+                            <TextBlock Text="Updates" Classes="h3" Margin="20,16,20,4" />
+                            <Grid Classes="setting" ColumnDefinitions="*,Auto">
+                                <StackPanel>
+                                    <TextBlock Classes="setting-title" Text="Update automatically" />
+                                    <TextBlock Classes="setting-desc" Text="Once a day the app asks GitHub for a newer release, then downloads and installs it quietly. Nothing about you is sent." />
+                                </StackPanel>
+                                <ToggleSwitch IsChecked="{Binding AutoUpdate}" IsEnabled="{Binding CanUpdate}" />
+                            </Grid>
+                            <Border Classes="divider" Margin="20,0" />
+                            <Grid Classes="setting" ColumnDefinitions="*,Auto">
+                                <StackPanel>
+                                    <TextBlock Classes="setting-title" Text="{Binding VersionText}" />
+                                    <TextBlock Classes="setting-desc" Text="{Binding UpdateStatus}" />
+                                </StackPanel>
+                                <Button Grid.Column="1" Classes="btn" Content="Check now" VerticalAlignment="Center"
+                                        Command="{Binding CheckForUpdatesCommand}" IsEnabled="{Binding !IsCheckingUpdates}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
                     <Border Classes="card">
                         <StackPanel>
                             <TextBlock Text="Clipboard" Classes="h3" Margin="20,16,20,4" />

@@ -17,6 +17,11 @@ internal static class Program
         var page = Array.IndexOf(args, "--page");
         if (page >= 0 && page + 1 < args.Length)
             DeveloperTools.Services.AppServices.StartPage = args[page + 1];
+#if !DEBUG
+        // Published builds update themselves from GitHub releases (never during the self-test).
+        DeveloperTools.Services.UpdateService.Enabled = SelfTest.LogPath is null;
+        DeveloperTools.Services.UpdateService.CleanUpOldFiles();
+#endif
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 

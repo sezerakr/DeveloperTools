@@ -15,11 +15,18 @@ public partial class SettingsPageViewModel : PageViewModel
 {
     private readonly SettingsService _settings;
     private readonly IDialogService _dialogs;
+    private readonly UpdateService _updates;
 
-    public SettingsPageViewModel(SettingsService settings, IDialogService dialogs)
+    public SettingsPageViewModel(SettingsService settings, IDialogService dialogs, UpdateService updates)
     {
         _settings = settings;
         _dialogs = dialogs;
+        _updates = updates;
+        updates.Changed += (_, _) =>
+        {
+            OnPropertyChanged(nameof(UpdateStatus));
+            OnPropertyChanged(nameof(IsCheckingUpdates));
+        };
         _theme = settings.Current.Theme;
         _defaultViewMode = settings.Current.DefaultViewMode;
         _editorFontSize = settings.Current.EditorFontSize;
@@ -86,6 +93,36 @@ public partial class SettingsPageViewModel : PageViewModel
             OnPropertyChanged();
         }
     }
+
+    // ------------------------------------------------------------------ updates
+
+    public string VersionText => $"Version {UpdateService.CurrentVersion.ToString(3)}";
+
+    public bool CanUpdate => UpdateService.Enabled;
+
+    public bool AutoUpdate
+    {
+        get => _settings.Current.AutoUpdate;
+        set
+        {
+            if (value == _settings.Current.AutoUpdate)
+                return;
+            _settings.Current.AutoUpdate = value;
+            _settings.Save();
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsCheckingUpdates => _updates.State is UpdateState.Checking or UpdateState.Downloading;
+
+    public string UpdateStatus => _updates.Status.Length > 0
+        ? _updates.Status
+        : _settings.Current.LastUpdateCheck is { } last
+            ? $"Last checked {last.ToLocalTime():d MMM yyyy, HH:mm}."
+            : "Not checked yet.";
+
+    [RelayCommand]
+    private Task CheckForUpdates() => _updates.CheckAsync(manual: true);
 
     public bool DetectClipboard
     {

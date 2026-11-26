@@ -23,6 +23,7 @@ public partial class MainWindow : Window
     private bool _closeConfirmed;
     private bool _startupTrimmed;
     private SettingsService? _settings;
+    private bool _restartAfterClose;
 
     // Last size/position while in the normal (not maximized/minimized) state, so it can be saved.
     private PixelPoint _normalPosition;
@@ -54,6 +55,17 @@ public partial class MainWindow : Window
         {
             _trimTimer.Start();
             EnsureVisible();
+            // Daily update check, well after startup so it never competes with the first paint.
+            DispatcherTimer.RunOnce(() =>
+            {
+                if (DataContext is MainWindowViewModel vm)
+                    _ = vm.Updates.CheckInBackgroundAsync();
+            }, TimeSpan.FromSeconds(10));
+        };
+        Closed += (_, _) =>
+        {
+            if (_restartAfterClose)
+                UpdateService.StartNewInstance();
         };
         Deactivated += (_, _) => _trimTimer.Start();
         Activated += (_, _) => { if (_startupTrimmed) _trimTimer.Stop(); };
@@ -62,6 +74,17 @@ public partial class MainWindow : Window
         Resized += (_, _) => RememberNormalBounds();
         // Moved to a screen with a different DPI: check once, after Windows has finished rescaling.
         ScalingChanged += (_, _) => Dispatcher.UIThread.Post(EnsureVisible, DispatcherPriority.Background);
+    }
+
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+        if (DataContext is MainWindowViewModel vm)
+            vm.RestartRequested += (_, _) =>
+            {
+                _restartAfterClose = true;
+                Close();
+            };
     }
 
     // ------------------------------------------------------------------ placement
@@ -207,6 +230,10 @@ public partial class MainWindow : Window
         {
             _closeConfirmed = true;
             Close();
+        }
+        else
+        {
+            _restartAfterClose = false; // user chose to stay
         }
     }
 }

@@ -30,7 +30,13 @@ public partial class MainWindowViewModel : ObservableObject
         // Only the start page (and settings, which applies the theme) exist at startup;
         // every other tool is created the first time it is opened.
         Markdown = new MarkdownPageViewModel(settings, dialogs);
-        Settings = new SettingsPageViewModel(settings, dialogs);
+        Updates = new UpdateService(settings);
+        Updates.Changed += (_, _) =>
+        {
+            if (Updates.State == UpdateState.Installed)
+                UpdateHint = Updates.Status;
+        };
+        Settings = new SettingsPageViewModel(settings, dialogs, Updates);
         Markdown.OpenSettingsRequested += (_, _) => ShowSettings();
         _currentPage = Markdown;
         _commands = BuildCommands();
@@ -342,4 +348,24 @@ public partial class MainWindowViewModel : ObservableObject
 
     [RelayCommand]
     private void DismissClipboard() => ClipboardHint = null;
+
+    // ------------------------------------------------------------------ updates
+
+    public UpdateService Updates { get; }
+
+    /// <summary>"Version x is installed. Restart to use it." (shown once an update has been put in place).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasUpdateHint))]
+    private string? _updateHint;
+
+    public bool HasUpdateHint => UpdateHint is not null;
+
+    /// <summary>Raised to close the window and start the updated app.</summary>
+    public event EventHandler? RestartRequested;
+
+    [RelayCommand]
+    private void RestartForUpdate() => RestartRequested?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand]
+    private void DismissUpdate() => UpdateHint = null;
 }

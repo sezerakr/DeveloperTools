@@ -102,6 +102,11 @@ Grab the latest version from the [Releases](../../releases) page:
 
 The desktop versions are compiled to native code. They start in about a fifth of a second and don't need .NET installed.
 
+**Updates are automatic.** Once a day the desktop app asks GitHub whether there is a newer release. If there is, it
+downloads it in the background, checks the file's SHA-256 against the one GitHub publishes, and swaps it in. There is
+no installer and nothing to click; you'll see a small "restart to use it" note, or the new version simply opens next
+time. You can turn this off in Settings → General. The web version is always the latest one.
+
 ### What's different in the browser
 
 The browser version is the same app with a few limits that come from the browser itself. Markdown opens and saves

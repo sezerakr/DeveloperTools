@@ -9,6 +9,10 @@ public sealed class AppSettings
     public string Theme { get; set; } = "System";
     public bool DetectClipboard { get; set; } = true;
 
+    // Updates (desktop): checked against GitHub releases at most once a day
+    public bool AutoUpdate { get; set; } = true;
+    public System.DateTime? LastUpdateCheck { get; set; }
+
     // Desktop window placement (position in screen pixels, size in device-independent pixels)
     public int? WindowX { get; set; }
     public int? WindowY { get; set; }
