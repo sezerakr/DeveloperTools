@@ -101,6 +101,24 @@ jobs:
           name: web
           path: DeveloperTools-*-web.zip
 
+  pages:
+    # Puts the browser version live at https://sezerakr.github.io/DeveloperTools/ (the gh-pages branch),
+    # on every release tag and on a manual "Run workflow".
+    needs: [version, web]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: web
+      - name: Unpack
+        run: mkdir site && unzip -q DeveloperTools-*-web.zip -d site && touch site/.nojekyll
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          force_orphan: true
+          commit_message: Publish DeveloperTools ${{ needs.version.outputs.value }} web version
+
   release:
     if: github.event_name == 'push'
     needs: [version, windows, linux, web]
