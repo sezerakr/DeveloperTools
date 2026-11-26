@@ -139,7 +139,7 @@ public static partial class DiffEngine
             t.Contains("\r\n") ? "CRLF" : t.Contains('\n') ? "LF" : "";
         var l = Style(left);
         var r = Style(right);
-        return l.Length > 0 && r.Length > 0 && l != r ? $"Line endings differ ({l} vs {r}); they are ignored." : null;
+        return l.Length > 0 && r.Length > 0 && l != r ? Localization.Loc.F("Line endings differ ({0} vs {1}); they are ignored.", l, r) : null;
     }
 
     // ------------------------------------------------------------------ core diff

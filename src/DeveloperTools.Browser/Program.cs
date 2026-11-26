@@ -52,7 +52,7 @@ internal sealed partial class BrowserStorage : IAppStorage
         catch (JSException) { /* storage full or disabled: keep working without persistence */ }
     }
 
-    public string Describe(string name) => $"This browser's local storage for this site ({name})";
+    public string Describe(string name) => DeveloperTools.Localization.Loc.F("This browser’s local storage for this site ({0})", name);
 
     public string? LocalPath(string name) => null;
 }

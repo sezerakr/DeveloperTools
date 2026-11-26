@@ -11,6 +11,8 @@ using CommunityToolkit.Mvvm.Input;
 using DeveloperTools.Services;
 using DeveloperTools.Tools;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.ViewModels;
 
 public partial class EncodePageViewModel : PageViewModel
@@ -23,8 +25,8 @@ public partial class EncodePageViewModel : PageViewModel
         PropertyChanged += OnOptionChanged;
     }
 
-    public override string Title => "Encode / Decode";
-    public override string Subtitle => "Base64, URL, HTML, hex, Unicode, images, JWT and hashes";
+    public override string Title => Loc.T("Encode / Decode");
+    public override string Subtitle => Loc.T("Base64, URL, HTML, hex, Unicode, images, JWT and hashes");
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasDirection), nameof(IsBase64), nameof(IsHash), nameof(InputHint), nameof(IsImageMode), nameof(IsImageEncode), nameof(ShowTextInput))]
@@ -62,15 +64,15 @@ public partial class EncodePageViewModel : PageViewModel
 
     public string InputHint => Mode switch
     {
-        CodecMode.Jwt => "Paste a JWT (eyJhbGciOi…). \"Bearer \" is ignored.",
-        CodecMode.Hash => "Text to hash (UTF-8)",
+        CodecMode.Jwt => Loc.T("Paste a JWT (eyJhbGciOi…). \"Bearer \" is ignored."),
+        CodecMode.Hash => Loc.T("Text to hash (UTF-8)"),
         CodecMode.Unicode when IsDecode => @"Text with escapes like \u00e7 \u{1F600} \x41",
-        CodecMode.Unicode => "Text to escape (non-ASCII becomes \\uXXXX)",
-        CodecMode.Image => "Base64 or a data: URI (data:image/png;base64,…)",
-        CodecMode.Base64 when IsDecode => "Base64 or Base64URL text",
-        CodecMode.Hex when IsDecode => "Hex bytes, e.g. 48 65 6c 6c 6f",
-        _ when IsDecode => "Text to decode",
-        _ => "Text to encode"
+        CodecMode.Unicode => Loc.T("Text to escape (non-ASCII becomes \\uXXXX)"),
+        CodecMode.Image => Loc.T("Base64 or a data: URI (data:image/png;base64,…)"),
+        CodecMode.Base64 when IsDecode => Loc.T("Base64 or Base64URL text"),
+        CodecMode.Hex when IsDecode => Loc.T("Hex bytes, e.g. 48 65 6c 6c 6f"),
+        _ when IsDecode => Loc.T("Text to decode"),
+        _ => Loc.T("Text to encode")
     };
 
     public ObservableCollection<CopyableValue> Results { get; } = new();
@@ -100,12 +102,12 @@ public partial class EncodePageViewModel : PageViewModel
     [RelayCommand]
     private async Task OpenImage()
     {
-        var file = await _dialogs.OpenFileAsync("Open image", "Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.bmp", "*.ico", "*.svg");
+        var file = await _dialogs.OpenFileAsync(Loc.T("Open image"), "Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.bmp", "*.ico", "*.svg");
         if (file is null)
             return;
         if (await StorageFiles.SizeAsync(file) > 20 * 1024 * 1024)
         {
-            Error = "Images up to 20 MB can be encoded here.";
+            Error = Loc.T("Images up to 20 MB can be encoded here.");
             return;
         }
         _imageBytes = await StorageFiles.ReadBytesAsync(file);
@@ -118,7 +120,7 @@ public partial class EncodePageViewModel : PageViewModel
     {
         if (_imageBytes is null)
             return;
-        var file = await _dialogs.SaveFileAsync("Save image", "image." + _imageExtension, _imageExtension, "Image");
+        var file = await _dialogs.SaveFileAsync(Loc.T("Save image"), "image." + _imageExtension, _imageExtension, "Image");
         if (file is not null)
             await StorageFiles.WriteBytesAsync(file, _imageBytes);
     }
@@ -146,7 +148,7 @@ public partial class EncodePageViewModel : PageViewModel
 
     private CopyableValue Long(string value, string label, string? note = null) =>
         new(value, t => _dialogs.CopyToClipboardAsync(t), label, note,
-            value.Length > MaxShown ? value[..MaxShown] + $"…  ({value.Length:N0} characters; Copy takes all of it)" : null);
+            value.Length > MaxShown ? value[..MaxShown] + Loc.F("…  ({0:N0} characters; Copy takes all of it)", value.Length) : null);
 
     private void RunImage()
     {
@@ -172,7 +174,7 @@ public partial class EncodePageViewModel : PageViewModel
             return;
         var bytes = Codecs.DecodeDataUri(Input);
         if (Codecs.DetectImage(bytes) is null)
-            throw new FormatException("The data decodes fine but is not a PNG, JPEG, GIF, WebP, BMP, ICO or SVG image.");
+            throw new FormatException(Loc.T("The data decodes fine but is not a PNG, JPEG, GIF, WebP, BMP, ICO or SVG image."));
         _imageBytes = bytes;
         ShowImage(bytes);
     }

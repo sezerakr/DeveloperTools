@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:DeveloperTools.Localization"
              xmlns:vm="using:DeveloperTools.ViewModels"
              xmlns:views="using:DeveloperTools.Views"
              x:Class="DeveloperTools.Views.MainView"
@@ -26,7 +27,7 @@
                                    Foreground="{DynamicResource Fg.Primary}" VerticalAlignment="Center"
                                    Margin="8,0,0,0" TextTrimming="CharacterEllipsis" />
                         <Button x:Name="SidebarToggle" Grid.Column="1" Classes="btn ghost icon"
-                                Command="{Binding ToggleSidebarCommand}" ToolTip.Tip="Toggle sidebar">
+                                Command="{Binding ToggleSidebarCommand}" ToolTip.Tip="{l:T 'Toggle sidebar'}">
                             <PathIcon Data="{StaticResource Icon.Menu}" />
                         </Button>
                     </Grid>
@@ -34,10 +35,10 @@
 
                 <StackPanel DockPanel.Dock="Bottom" Margin="10,0,10,14" Spacing="2">
                     <Button Classes="nav" Classes.active="{Binding IsSettingsActive}" Command="{Binding ShowSettingsCommand}"
-                            ToolTip.Tip="Settings">
+                            ToolTip.Tip="{l:T 'Settings'}">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <PathIcon Data="{StaticResource Icon.Settings}" />
-                            <TextBlock Classes="wide" Text="Settings" VerticalAlignment="Center" />
+                            <TextBlock Classes="wide" Text="{l:T 'Settings'}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
                     <TextBlock Classes="muted wide" Text="{Binding Version}" FontSize="11" Margin="10,10,0,0" />
@@ -47,65 +48,73 @@
                 <StackPanel Margin="10,12,10,0" Spacing="2">
                     <!-- command palette launcher -->
                     <Button x:Name="SearchButton" Classes="nav" Command="{Binding OpenPaletteCommand}" Margin="0,0,0,10"
-                            BorderBrush="{DynamicResource Line}" BorderThickness="1" ToolTip.Tip="Search tools and actions (Ctrl+K)">
+                            BorderBrush="{DynamicResource Line}" BorderThickness="1" ToolTip.Tip="{l:T 'Search tools and actions (Ctrl+K)'}">
                         <Grid ColumnDefinitions="Auto,*,Auto">
                             <PathIcon Data="{StaticResource Icon.Search}" Width="15" Height="15" Foreground="{DynamicResource Fg.Muted}" />
-                            <TextBlock Grid.Column="1" Classes="wide muted" Text="Search…" Margin="10,0,0,0" VerticalAlignment="Center"
+                            <TextBlock Grid.Column="1" Classes="wide muted" Text="{l:T 'Search…'}" Margin="10,0,0,0" VerticalAlignment="Center"
                                        FontWeight="Normal" />
                             <Border Grid.Column="2" Classes="wide" CornerRadius="4" Padding="5,1" Background="{DynamicResource Bg.Pressed}"
                                     VerticalAlignment="Center">
-                                <TextBlock Text="Ctrl K" FontSize="10.5" Classes="muted" />
+                                <TextBlock Text="{l:T 'Ctrl K'}" FontSize="10.5" Classes="muted" />
                             </Border>
                         </Grid>
                     </Button>
 
-                    <TextBlock Classes="label wide" Text="TOOLS" Margin="10,0,0,8" />
-                    <Button Classes="nav" Classes.active="{Binding IsMarkdownActive}" Command="{Binding ShowMarkdownCommand}" ToolTip.Tip="Markdown">
+                    <Button Classes="nav" Classes.active="{Binding IsHomeActive}" Command="{Binding ShowHomeCommand}"
+                            ToolTip.Tip="{l:T 'Home: your favorite tools'}" Margin="0,0,0,8">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <PathIcon Data="{StaticResource Icon.Home}" />
+                            <TextBlock Classes="wide" Text="{l:T 'Home'}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <TextBlock Classes="label wide" Text="{l:T 'TOOLS'}" Margin="10,0,0,8" />
+                    <Button Classes="nav" Classes.active="{Binding IsMarkdownActive}" Command="{Binding ShowMarkdownCommand}" ToolTip.Tip="{l:T 'Markdown'}">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <PathIcon Data="{StaticResource Icon.Markdown}" />
-                            <TextBlock Classes="wide" Text="Markdown" VerticalAlignment="Center" />
+                            <TextBlock Classes="wide" Text="{l:T 'Markdown'}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Classes="nav" Classes.active="{Binding IsJsonActive}" Command="{Binding ShowJsonCommand}" ToolTip.Tip="JSON">
+                    <Button Classes="nav" Classes.active="{Binding IsJsonActive}" Command="{Binding ShowJsonCommand}" ToolTip.Tip="{l:T 'JSON'}">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <PathIcon Data="{StaticResource Icon.Json}" />
-                            <TextBlock Classes="wide" Text="JSON" VerticalAlignment="Center" />
+                            <TextBlock Classes="wide" Text="{l:T 'JSON'}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Classes="nav" Classes.active="{Binding IsDiffActive}" Command="{Binding ShowDiffCommand}" ToolTip.Tip="Diff">
+                    <Button Classes="nav" Classes.active="{Binding IsDiffActive}" Command="{Binding ShowDiffCommand}" ToolTip.Tip="{l:T 'Diff'}">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <PathIcon Data="{StaticResource Icon.Diff}" />
-                            <TextBlock Classes="wide" Text="Diff" VerticalAlignment="Center" />
+                            <TextBlock Classes="wide" Text="{l:T 'Diff'}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Classes="nav" Classes.active="{Binding IsRegexActive}" Command="{Binding ShowRegexCommand}" ToolTip.Tip="Regex">
+                    <Button Classes="nav" Classes.active="{Binding IsRegexActive}" Command="{Binding ShowRegexCommand}" ToolTip.Tip="{l:T 'Regex'}">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <PathIcon Data="{StaticResource Icon.Regex}" />
-                            <TextBlock Classes="wide" Text="Regex" VerticalAlignment="Center" />
+                            <TextBlock Classes="wide" Text="{l:T 'Regex'}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Classes="nav" Classes.active="{Binding IsTimestampActive}" Command="{Binding ShowTimestampCommand}" ToolTip.Tip="Timestamp">
+                    <Button Classes="nav" Classes.active="{Binding IsTimestampActive}" Command="{Binding ShowTimestampCommand}" ToolTip.Tip="{l:T 'Timestamp'}">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <PathIcon Data="{StaticResource Icon.Clock}" />
-                            <TextBlock Classes="wide" Text="Timestamp" VerticalAlignment="Center" />
+                            <TextBlock Classes="wide" Text="{l:T 'Timestamp'}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Classes="nav" Classes.active="{Binding IsTextActive}" Command="{Binding ShowTextCommand}" ToolTip.Tip="Text">
+                    <Button Classes="nav" Classes.active="{Binding IsTextActive}" Command="{Binding ShowTextCommand}" ToolTip.Tip="{l:T 'Text'}">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <PathIcon Data="{StaticResource Icon.Text}" />
-                            <TextBlock Classes="wide" Text="Text" VerticalAlignment="Center" />
+                            <TextBlock Classes="wide" Text="{l:T 'Text'}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Classes="nav" Classes.active="{Binding IsGeneratorsActive}" Command="{Binding ShowGeneratorsCommand}" ToolTip.Tip="Generators">
+                    <Button Classes="nav" Classes.active="{Binding IsGeneratorsActive}" Command="{Binding ShowGeneratorsCommand}" ToolTip.Tip="{l:T 'Generators'}">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <PathIcon Data="{StaticResource Icon.Generate}" />
-                            <TextBlock Classes="wide" Text="Generators" VerticalAlignment="Center" />
+                            <TextBlock Classes="wide" Text="{l:T 'Generators'}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Classes="nav" Classes.active="{Binding IsEncodeActive}" Command="{Binding ShowEncodeCommand}" ToolTip.Tip="Encode / Decode">
+                    <Button Classes="nav" Classes.active="{Binding IsEncodeActive}" Command="{Binding ShowEncodeCommand}" ToolTip.Tip="{l:T 'Encode / Decode'}">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <PathIcon Data="{StaticResource Icon.Swap}" />
-                            <TextBlock Classes="wide" Text="Encode / Decode" VerticalAlignment="Center" />
+                            <TextBlock Classes="wide" Text="{l:T 'Encode / Decode'}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -118,15 +127,23 @@
             <Border DockPanel.Dock="Top" Height="56" Padding="24,0"
                     Background="{DynamicResource Bg.Surface}"
                     BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
-                <Grid ColumnDefinitions="Auto,Auto,*,Auto" VerticalAlignment="Center">
+                <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto" VerticalAlignment="Center">
                     <TextBlock Grid.Column="0" Text="{Binding CurrentPage.Title}" FontSize="17" FontWeight="SemiBold"
                                Foreground="{DynamicResource Fg.Primary}" VerticalAlignment="Center" />
-                    <Border Grid.Column="1" Width="1" Height="16" Margin="12,0"
+                    <!-- star: add the current tool to Home -->
+                    <Button Grid.Column="1" Classes="btn ghost icon" Margin="6,0,0,0" IsVisible="{Binding CanFavorite}"
+                            Command="{Binding ToggleCurrentFavoriteCommand}" ToolTip.Tip="{l:T 'Favorite: show this tool on Home'}">
+                        <Panel>
+                            <PathIcon Data="{StaticResource Icon.Star}" Foreground="{DynamicResource Dirty}" IsVisible="{Binding IsCurrentFavorite}" />
+                            <PathIcon Data="{StaticResource Icon.StarOutline}" IsVisible="{Binding !IsCurrentFavorite}" />
+                        </Panel>
+                    </Button>
+                    <Border Grid.Column="2" Width="1" Height="16" Margin="12,0"
                             Background="{DynamicResource Line.Strong}" VerticalAlignment="Center" />
-                    <TextBlock Grid.Column="2" Text="{Binding CurrentPage.Subtitle}" FontSize="13" Classes="muted"
+                    <TextBlock Grid.Column="3" Text="{Binding CurrentPage.Subtitle}" FontSize="13" Classes="muted"
                                VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                    <Button Grid.Column="3" Classes="btn ghost icon" Margin="12,0,-8,0"
-                            Command="{Binding ToggleThemeCommand}" ToolTip.Tip="Switch light / dark">
+                    <Button Grid.Column="4" Classes="btn ghost icon" Margin="12,0,-8,0"
+                            Command="{Binding ToggleThemeCommand}" ToolTip.Tip="{l:T 'Switch light / dark'}">
                         <PathIcon Data="{DynamicResource Icon.ThemeToggle}" />
                     </Button>
                 </Grid>
@@ -140,10 +157,10 @@
                               Foreground="{DynamicResource Success}" VerticalAlignment="Center" />
                     <TextBlock Grid.Column="1" Text="{Binding UpdateHint}" FontSize="12.5" Foreground="{DynamicResource Fg.Primary}"
                                VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                    <Button Grid.Column="2" Classes="btn xs primary" Content="Restart now" Margin="10,0,4,0"
+                    <Button Grid.Column="2" Classes="btn xs primary" Content="{l:T 'Restart now'}" Margin="10,0,4,0"
                             Command="{Binding RestartForUpdateCommand}" />
                     <Button Grid.Column="3" Classes="btn ghost icon" Width="24" Height="24" Command="{Binding DismissUpdateCommand}"
-                            ToolTip.Tip="Later: the new version opens next time">
+                            ToolTip.Tip="{l:T 'Later: the new version opens next time'}">
                         <PathIcon Data="{StaticResource Icon.Close}" Width="12" Height="12" />
                     </Button>
                 </Grid>
@@ -160,7 +177,7 @@
                     <Button Grid.Column="2" Classes="btn xs primary" Content="{Binding ClipboardAction}" Margin="10,0,4,0"
                             Command="{Binding UseClipboardCommand}" />
                     <Button Grid.Column="3" Classes="btn ghost icon" Width="24" Height="24" Command="{Binding DismissClipboardCommand}"
-                            ToolTip.Tip="Dismiss (turn off in Settings → General)">
+                            ToolTip.Tip="{l:T 'Dismiss (turn off in Settings → General)'}">
                         <PathIcon Data="{StaticResource Icon.Close}" Width="12" Height="12" />
                     </Button>
                 </Grid>
@@ -180,13 +197,13 @@
                 <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="14,4,10,4">
                     <PathIcon Data="{StaticResource Icon.Search}" Width="16" Height="16" Foreground="{DynamicResource Fg.Muted}" />
                     <TextBox x:Name="PaletteBox" Grid.Column="1" Text="{Binding PaletteQuery}" Classes="bare"
-                             PlaceholderText="Search tools and actions…" FontSize="15" Padding="10,10" />
+                             PlaceholderText="{l:T 'Search tools and actions…'}" FontSize="15" Padding="10,10" />
                     <Border Grid.Column="2" CornerRadius="4" Padding="5,1" Background="{DynamicResource Bg.Pressed}" VerticalAlignment="Center">
-                        <TextBlock Text="Esc" FontSize="10.5" Classes="muted" />
+                        <TextBlock Text="{l:T 'Esc'}" FontSize="10.5" Classes="muted" />
                     </Border>
                 </Grid>
                 <Border DockPanel.Dock="Top" Height="1" Background="{DynamicResource Line}" />
-                <TextBlock DockPanel.Dock="Top" Text="No matching tools or actions." Classes="muted" FontSize="13" Margin="16,14"
+                <TextBlock DockPanel.Dock="Top" Text="{l:T 'No matching tools or actions.'}" Classes="muted" FontSize="13" Margin="16,14"
                            IsVisible="{Binding HasNoPaletteResults}" />
                 <ListBox x:Name="PaletteList" ItemsSource="{Binding PaletteResults}" SelectedItem="{Binding PaletteSelection}"
                          MaxHeight="420" Background="Transparent" Margin="6" Tapped="OnPaletteItemTapped">

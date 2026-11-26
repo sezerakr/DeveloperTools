@@ -12,6 +12,8 @@ using CommunityToolkit.Mvvm.Input;
 using DeveloperTools.Services;
 using DeveloperTools.Tools;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.ViewModels;
 
 public partial class JsonPageViewModel : PageViewModel
@@ -50,8 +52,8 @@ public partial class JsonPageViewModel : PageViewModel
         };
     }
 
-    public override string Title => "JSON";
-    public override string Subtitle => "Format, validate and repair JSON";
+    public override string Title => Loc.T("JSON");
+    public override string Subtitle => Loc.T("Format, validate and repair JSON");
 
     public TextDocument Document { get; }
     public JsonPanelViewModel Panel { get; }
@@ -72,20 +74,20 @@ public partial class JsonPageViewModel : PageViewModel
     public bool IsInvalid => !Check.IsValid && !Check.IsEmpty;
     public bool IsEmpty => Check.IsEmpty;
 
-    public string StatusLabel => IsValid ? "Valid" : IsInvalid ? "Invalid" : "Empty";
+    public string StatusLabel => IsValid ? Loc.T("Valid") : IsInvalid ? Loc.T("Invalid") : Loc.T("Empty");
 
     public string StatusText
     {
         get
         {
             if (IsEmpty)
-                return "Paste or type JSON, or open a file (Ctrl+O).";
+                return Loc.T("Paste or type JSON, or open a file (Ctrl+O).");
             if (IsInvalid)
-                return $"Line {Check.Line}, column {Check.Column}: {Check.Message}";
+                return Loc.F("Line {0}, column {1}: {2}", Check.Line, Check.Column, Check.Message);
 
-            var parts = new List<string> { Check.RootKind ?? "value" };
-            if (Check.Keys > 0) parts.Add($"{Check.Keys:N0} keys");
-            if (Check.Depth > 1) parts.Add($"depth {Check.Depth}");
+            var parts = new List<string> { Loc.T(Check.RootKind ?? "value") };
+            if (Check.Keys > 0) parts.Add(Loc.F("{0:N0} keys", Check.Keys));
+            if (Check.Depth > 1) parts.Add(Loc.F("depth {0}", Check.Depth));
             parts.Add(FormatSize(Encoding.UTF8.GetByteCount(Document.Text)));
             return string.Join("  ·  ", parts);
         }
@@ -114,7 +116,7 @@ public partial class JsonPageViewModel : PageViewModel
             if (formatted != text)
                 Replace(formatted);
         }
-        ShowNotice("Loaded from the clipboard. Ctrl+Z restores what was here before.");
+        ShowNotice(Loc.T("Loaded from the clipboard. Ctrl+Z restores what was here before."));
     }
 
     [RelayCommand]
@@ -122,7 +124,7 @@ public partial class JsonPageViewModel : PageViewModel
 
     /// <summary>Treats the editor text as YAML and replaces it with JSON.</summary>
     [RelayCommand]
-    private Task FromYaml() => TransformAsync(t => YamlTools.YamlToJson(t, IndentUnit), _ => "Converted YAML to JSON. Ctrl+Z restores the YAML.");
+    private Task FromYaml() => TransformAsync(t => YamlTools.YamlToJson(t, IndentUnit), _ => Loc.T("Converted YAML to JSON. Ctrl+Z restores the YAML."));
 
     // ------------------------------------------------------------------ notice strip
 
@@ -210,7 +212,7 @@ public partial class JsonPageViewModel : PageViewModel
         if (formatted == text)
             return;
         Replace(formatted);
-        ShowNotice("Pasted JSON formatted. Ctrl+Z restores the original.");
+        ShowNotice(Loc.T("Pasted JSON formatted. Ctrl+Z restores the original."));
     }
 
     private void Replace(string text)
@@ -258,16 +260,16 @@ public partial class JsonPageViewModel : PageViewModel
 
     [RelayCommand]
     private Task SortKeys() => TransformAsync(t => Fail(t) ?? JsonTools.Format(t, IndentUnit, sortKeys: true),
-        _ => "Keys sorted alphabetically at every level.");
+        _ => Loc.T("Keys sorted alphabetically at every level."));
 
     /// <summary>Format/minify only valid JSON; point at Repair otherwise.</summary>
     private static string? Fail(string text)
     {
         var check = JsonTools.Validate(text);
         if (check.IsEmpty)
-            throw new FormatException("There is no JSON yet. Paste or type some first.");
+            throw new FormatException(Loc.T("There is no JSON yet. Paste or type some first."));
         if (!check.IsValid)
-            throw new FormatException($"Line {check.Line}, column {check.Column}: {check.Message} Use Repair to fix common mistakes automatically.");
+            throw new FormatException(Loc.F("Line {0}, column {1}: {2} Use Repair to fix common mistakes automatically.", check.Line, check.Column, check.Message));
         return null;
     }
 
@@ -276,7 +278,7 @@ public partial class JsonPageViewModel : PageViewModel
     {
         if (string.IsNullOrWhiteSpace(Document.Text))
         {
-            ShowNotice("There is no JSON yet. Paste or type some first.", error: true);
+            ShowNotice(Loc.T("There is no JSON yet. Paste or type some first."), error: true);
             return;
         }
 
@@ -292,14 +294,14 @@ public partial class JsonPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private Task EscapeString() => TransformAsync(JsonTools.Escape, _ => "Converted to a JSON string literal.");
+    private Task EscapeString() => TransformAsync(JsonTools.Escape, _ => Loc.T("Converted to a JSON string literal."));
 
     [RelayCommand]
     private Task UnescapeString() => TransformAsync(t =>
     {
         var plain = JsonTools.Unescape(t);
         return JsonTools.Validate(plain).IsValid ? JsonTools.Format(plain, IndentUnit) : plain;
-    }, _ => "Unescaped the JSON string.");
+    }, _ => Loc.T("Unescaped the JSON string."));
 
     [RelayCommand]
     private async Task CopyAll()
@@ -307,7 +309,7 @@ public partial class JsonPageViewModel : PageViewModel
         if (Document.TextLength == 0)
             return;
         await _dialogs.CopyToClipboardAsync(Document.Text);
-        ShowNotice("Copied to the clipboard.");
+        ShowNotice(Loc.T("Copied to the clipboard."));
     }
 
     [RelayCommand]
@@ -336,7 +338,7 @@ public partial class JsonPageViewModel : PageViewModel
         if (!await ConfirmLeaveAsync())
             return;
 
-        var file = await _dialogs.OpenFileAsync("Open JSON file", "JSON", "*.json", "*.jsonc", "*.json5", "*.geojson", "*.har");
+        var file = await _dialogs.OpenFileAsync(Loc.T("Open JSON file"), "JSON", "*.json", "*.jsonc", "*.json5", "*.geojson", "*.har");
         if (file is null)
             return;
 
@@ -344,7 +346,7 @@ public partial class JsonPageViewModel : PageViewModel
         {
             if (await StorageFiles.SizeAsync(file) > MaxFileBytes)
             {
-                ShowNotice($"\"{file.Name}\" is larger than 100 MB, too big to open here.", error: true);
+                ShowNotice(Loc.F("\"{0}\" is larger than 100 MB, too big to open here.", file.Name), error: true);
                 return;
             }
 
@@ -359,7 +361,7 @@ public partial class JsonPageViewModel : PageViewModel
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            ShowNotice("Could not open the file: " + ex.Message, error: true);
+            ShowNotice(Loc.T("Could not open the file: ") + ex.Message, error: true);
         }
     }
 
@@ -378,7 +380,7 @@ public partial class JsonPageViewModel : PageViewModel
     [RelayCommand]
     private async Task SaveAs()
     {
-        var file = await _dialogs.SaveFileAsync("Save JSON", FilePath is null ? "data.json" : FileName, "json", "JSON");
+        var file = await _dialogs.SaveFileAsync(Loc.T("Save JSON"), FilePath is null ? "data.json" : FileName, "json", "JSON");
         if (file is null)
             return;
         if (await WriteAsync(file))
@@ -400,7 +402,7 @@ public partial class JsonPageViewModel : PageViewModel
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
         {
-            ShowNotice("Could not save: " + ex.Message, error: true);
+            ShowNotice(Loc.T("Could not save: ") + ex.Message, error: true);
             return false;
         }
     }

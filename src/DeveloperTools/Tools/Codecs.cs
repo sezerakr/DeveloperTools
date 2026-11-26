@@ -7,6 +7,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.Tools;
 
 public enum CodecMode
@@ -69,14 +71,14 @@ public static class Codecs
         clean = clean.TrimEnd('=');
         clean += (clean.Length % 4) switch { 2 => "==", 3 => "=", _ => "" };
         if (clean.Length % 4 == 1)
-            throw new FormatException("Not valid Base64: the length is wrong.");
+            throw new FormatException(Loc.T("Not valid Base64: the length is wrong."));
         try
         {
             return Convert.FromBase64String(clean);
         }
         catch (FormatException)
         {
-            throw new FormatException("Not valid Base64: it contains characters outside the Base64 alphabet.");
+            throw new FormatException(Loc.T("Not valid Base64: it contains characters outside the Base64 alphabet."));
         }
     }
 
@@ -87,14 +89,14 @@ public static class Codecs
             clean = clean[2..];
         clean = clean.Replace("0x", "", StringComparison.OrdinalIgnoreCase);
         if (clean.Length % 2 != 0)
-            throw new FormatException("Not valid hex: it needs an even number of digits.");
+            throw new FormatException(Loc.T("Not valid hex: it needs an even number of digits."));
         try
         {
             return Convert.FromHexString(clean);
         }
         catch (FormatException)
         {
-            throw new FormatException("Not valid hex: use only 0-9 and a-f.");
+            throw new FormatException(Loc.T("Not valid hex: use only 0-9 and a-f."));
         }
     }
 
@@ -102,12 +104,12 @@ public static class Codecs
     {
         try
         {
-            return new("Decoded text", StrictUtf8.GetString(bytes), $"{bytes.Length:N0} bytes, UTF-8");
+            return new(Loc.T("Decoded text"), StrictUtf8.GetString(bytes), Loc.F("{0:N0} bytes, UTF-8", bytes.Length));
         }
         catch (DecoderFallbackException)
         {
-            return new("Decoded bytes (hex)", Convert.ToHexStringLower(bytes),
-                $"{bytes.Length:N0} bytes. Not UTF-8 text, so shown as hex.");
+            return new(Loc.T("Decoded bytes (hex)"), Convert.ToHexStringLower(bytes),
+                Loc.F("{0:N0} bytes. Not UTF-8 text, so shown as hex.", bytes.Length));
         }
     }
 
@@ -205,7 +207,7 @@ public static class Codecs
         if (t.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
         {
             var comma = t.IndexOf(',');
-            if (comma < 0) throw new FormatException("The data URI has no comma before the data.");
+            if (comma < 0) throw new FormatException(Loc.T("The data URI has no comma before the data."));
             t = t[(comma + 1)..];
         }
         return Base64Decode(t);
@@ -221,9 +223,9 @@ public static class Codecs
 
         var parts = token.Split('.');
         if (parts.Length == 5)
-            throw new FormatException("This is an encrypted token (JWE). Only signed tokens (JWS) can be read without the key.");
+            throw new FormatException(Loc.T("This is an encrypted token (JWE). Only signed tokens (JWS) can be read without the key."));
         if (parts.Length != 3)
-            throw new FormatException("A JWT has three parts separated by dots: header.payload.signature.");
+            throw new FormatException(Loc.T("A JWT has three parts separated by dots: header.payload.signature."));
 
         var header = DecodeJwtPart(parts[0], "header");
         var payload = DecodeJwtPart(parts[1], "payload");
@@ -273,7 +275,7 @@ public static class Codecs
         }
         catch (Exception e) when (e is FormatException or DecoderFallbackException)
         {
-            throw new FormatException($"The {name} is not valid Base64URL-encoded JSON.");
+            throw new FormatException(Loc.F("The {0} is not valid Base64URL-encoded JSON.", name));
         }
     }
 
@@ -340,10 +342,10 @@ public static class Codecs
                 new("HMAC-SHA256", Out(HMACSHA256.HashData(key, data))),
                 new("HMAC-SHA384", Out(HMACSHA384.HashData(key, data))),
                 new("HMAC-SHA512", Out(HMACSHA512.HashData(key, data))),
-                new("HMAC-SHA1", Out(HMACSHA1.HashData(key, data)), "Legacy. Prefer HMAC-SHA256."),
+                new("HMAC-SHA1", Out(HMACSHA1.HashData(key, data)), Loc.T("Legacy. Prefer HMAC-SHA256.")),
                 OperatingSystem.IsBrowser()
-                    ? new CodecResult("HMAC-MD5", "Not available in the browser version.")
-                    : new CodecResult("HMAC-MD5", Out(HMACMD5.HashData(key, data)), "Legacy. Prefer HMAC-SHA256.")
+                    ? new CodecResult("HMAC-MD5", Loc.T("Not available in the browser version."))
+                    : new CodecResult("HMAC-MD5", Out(HMACMD5.HashData(key, data)), Loc.T("Legacy. Prefer HMAC-SHA256."))
             ];
         }
 
@@ -352,11 +354,11 @@ public static class Codecs
             new("SHA-256", Out(SHA256.HashData(data))),
             new("SHA-384", Out(SHA384.HashData(data))),
             new("SHA-512", Out(SHA512.HashData(data))),
-            new("SHA-1", Out(SHA1.HashData(data)), "Not collision-resistant. Use for checksums only."),
+            new("SHA-1", Out(SHA1.HashData(data)), Loc.T("Not collision-resistant. Use for checksums only.")),
             // MD5 is not implemented in .NET's WebAssembly runtime.
             OperatingSystem.IsBrowser()
-                ? new CodecResult("MD5", "Not available in the browser version.")
-                : new CodecResult("MD5", Out(MD5.HashData(data)), "Not secure. Use for checksums only.")
+                ? new CodecResult("MD5", Loc.T("Not available in the browser version."))
+                : new CodecResult("MD5", Out(MD5.HashData(data)), Loc.T("Not secure. Use for checksums only."))
         ];
     }
 }

@@ -7,6 +7,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.Tools;
 
 /// <summary>Result of a strict syntax check. Line/Column are 1-based; Offset is a character offset.</summary>
@@ -73,7 +75,7 @@ public static partial class JsonTools
             var bytePos = (int)(ex.BytePositionInLine ?? 0);
             var offset = CharOffset(text, skip, line, bytePos);
             var lineStart = LineStart(text, offset);
-            return new JsonCheck(false, false, Explain(text, offset, CleanMessage(ex.Message)), line + 1, offset - lineStart + 1, offset);
+            return new JsonCheck(false, false, Loc.T(Explain(text, offset, CleanMessage(ex.Message))), line + 1, offset - lineStart + 1, offset);
         }
     }
 
@@ -144,7 +146,7 @@ public static partial class JsonTools
     {
         var check = Validate(text);
         if (!check.IsValid)
-            throw new FormatException(check.IsEmpty ? "There is no JSON to format." : $"Line {check.Line}, column {check.Column}: {check.Message}");
+            throw new FormatException(check.IsEmpty ? Loc.T("There is no JSON to format.") : $"Line {check.Line}, column {check.Column}: {check.Message}");
 
         var node = new LenientParser(text).ParseDocument(); // exact for valid input
         return Write(node, indent, sortKeys);
@@ -180,7 +182,7 @@ public static partial class JsonTools
         }
         catch (JsonException ex)
         {
-            throw new FormatException("Not a valid JSON string: " + CleanMessage(ex.Message));
+            throw new FormatException(Loc.T("Not a valid JSON string: ") + CleanMessage(ex.Message));
         }
     }
 
@@ -361,7 +363,7 @@ public static partial class JsonTools
         {
             SkipTrivia();
             if (_i >= _end)
-                throw new FormatException("There is no JSON to repair.");
+                throw new FormatException(Loc.T("There is no JSON to repair."));
 
             var values = new List<Node>();
             while (true)
@@ -426,7 +428,7 @@ public static partial class JsonTools
         private void Enter()
         {
             if (++_depth > MaxDepth)
-                throw new FormatException($"The JSON is nested more than {MaxDepth} levels deep.");
+                throw new FormatException(Loc.F("The JSON is nested more than {0} levels deep.", MaxDepth));
         }
 
         private Node ParseObject()

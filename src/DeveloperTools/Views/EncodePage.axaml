@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:DeveloperTools.Localization"
              xmlns:vm="using:DeveloperTools.ViewModels"
              xmlns:c="using:DeveloperTools.Converters"
              x:Class="DeveloperTools.Views.EncodePage"
@@ -29,54 +30,54 @@
             <WrapPanel>
                 <Border Classes="segmented" Margin="0,2,12,2">
                     <WrapPanel>
-                        <RadioButton Classes="segment" GroupName="codec" Content="Base64"
+                        <RadioButton Classes="segment" GroupName="codec" Content="{l:T 'Base64'}"
                                      IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Base64}" />
-                        <RadioButton Classes="segment" GroupName="codec" Content="URL"
+                        <RadioButton Classes="segment" GroupName="codec" Content="{l:T 'URL'}"
                                      IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Url}" />
-                        <RadioButton Classes="segment" GroupName="codec" Content="HTML"
+                        <RadioButton Classes="segment" GroupName="codec" Content="{l:T 'HTML'}"
                                      IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Html}" />
-                        <RadioButton Classes="segment" GroupName="codec" Content="Hex"
+                        <RadioButton Classes="segment" GroupName="codec" Content="{l:T 'Hex'}"
                                      IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Hex}" />
-                        <RadioButton Classes="segment" GroupName="codec" Content="Unicode"
+                        <RadioButton Classes="segment" GroupName="codec" Content="{l:T 'Unicode'}"
                                      IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Unicode}" />
-                        <RadioButton Classes="segment" GroupName="codec" Content="Image"
+                        <RadioButton Classes="segment" GroupName="codec" Content="{l:T 'Image'}"
                                      IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Image}" />
-                        <RadioButton Classes="segment" GroupName="codec" Content="JWT"
+                        <RadioButton Classes="segment" GroupName="codec" Content="{l:T 'JWT'}"
                                      IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Jwt}" />
-                        <RadioButton Classes="segment" GroupName="codec" Content="Hash"
+                        <RadioButton Classes="segment" GroupName="codec" Content="{l:T 'Hash'}"
                                      IsChecked="{Binding Mode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Hash}" />
                     </WrapPanel>
                 </Border>
 
                 <Border Classes="segmented" Margin="0,2,12,2" IsVisible="{Binding HasDirection}">
                     <StackPanel Orientation="Horizontal">
-                        <RadioButton Classes="segment" GroupName="direction" Content="Encode" IsChecked="{Binding IsEncode}" />
-                        <RadioButton Classes="segment" GroupName="direction" Content="Decode" IsChecked="{Binding IsDecode}" />
+                        <RadioButton Classes="segment" GroupName="direction" Content="{l:T 'Encode'}" IsChecked="{Binding IsEncode}" />
+                        <RadioButton Classes="segment" GroupName="direction" Content="{l:T 'Decode'}" IsChecked="{Binding IsDecode}" />
                     </StackPanel>
                 </Border>
 
-                <CheckBox Content="URL-safe" IsChecked="{Binding UrlSafe}" Margin="0,2,12,2" VerticalAlignment="Center"
-                          IsVisible="{Binding IsBase64}" ToolTip.Tip="Use - and _ instead of + and /, without = padding" />
+                <CheckBox Content="{l:T 'URL-safe'}" IsChecked="{Binding UrlSafe}" Margin="0,2,12,2" VerticalAlignment="Center"
+                          IsVisible="{Binding IsBase64}" ToolTip.Tip="{l:T 'Use - and _ instead of + and /, without = padding'}" />
 
                 <Border Classes="segmented" Margin="0,2,12,2" IsVisible="{Binding IsHash}">
                     <StackPanel Orientation="Horizontal">
-                        <RadioButton Classes="segment" GroupName="hashfmt" Content="Hex"
+                        <RadioButton Classes="segment" GroupName="hashfmt" Content="{l:T 'Hex'}"
                                      IsChecked="{Binding !HashBase64}" />
-                        <RadioButton Classes="segment" GroupName="hashfmt" Content="Base64" IsChecked="{Binding HashBase64}" />
+                        <RadioButton Classes="segment" GroupName="hashfmt" Content="{l:T 'Base64'}" IsChecked="{Binding HashBase64}" />
                     </StackPanel>
                 </Border>
 
                 <Button Classes="btn" Margin="0,2,6,2" Command="{Binding SwapCommand}" IsVisible="{Binding HasDirection}"
-                        ToolTip.Tip="Use the output as input and reverse the direction">
+                        ToolTip.Tip="{l:T 'Use the output as input and reverse the direction'}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <PathIcon Data="{StaticResource Icon.Swap}" />
-                        <TextBlock Text="Swap" VerticalAlignment="Center" />
+                        <TextBlock Text="{l:T 'Swap'}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
                 <Button Classes="btn ghost" Margin="0,2,6,2" Command="{Binding ClearCommand}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <PathIcon Data="{StaticResource Icon.Eraser}" />
-                        <TextBlock Text="Clear" VerticalAlignment="Center" />
+                        <TextBlock Text="{l:T 'Clear'}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </WrapPanel>
@@ -87,14 +88,14 @@
             <Border Classes="card">
                 <DockPanel>
                     <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="16,12,16,10">
-                        <TextBlock Classes="h3" Text="Input" VerticalAlignment="Center" />
+                        <TextBlock Classes="h3" Text="{l:T 'Input'}" VerticalAlignment="Center" />
                         <TextBlock Grid.Column="1" Text="{Binding InputStats}" FontSize="12" Classes="muted" VerticalAlignment="Center" />
                     </Grid>
                     <Border DockPanel.Dock="Top" Classes="divider" />
                     <StackPanel DockPanel.Dock="Bottom" IsVisible="{Binding IsHash}">
                         <Border Classes="divider" />
                         <TextBox Classes="input" Text="{Binding HmacKey}" FontFamily="{StaticResource Font.Mono}" FontSize="13"
-                                 PlaceholderText="HMAC secret (optional). Leave empty for plain hashes." />
+                                 PlaceholderText="{l:T 'HMAC secret (optional). Leave empty for plain hashes.'}" />
                     </StackPanel>
                     <Panel>
                         <TextBox x:Name="InputBox" Classes="code input" Text="{Binding Input}" PlaceholderText="{Binding InputHint}"
@@ -102,12 +103,12 @@
                         <StackPanel IsVisible="{Binding IsImageEncode}" HorizontalAlignment="Center" VerticalAlignment="Center"
                                     Spacing="10" Margin="24">
                             <PathIcon Data="{StaticResource Icon.Image}" Width="28" Height="28" Foreground="{DynamicResource Fg.Muted}" />
-                            <TextBlock Text="Pick an image to get its Base64 and data URI." Classes="secondary" FontSize="13"
+                            <TextBlock Text="{l:T 'Pick an image to get its Base64 and data URI.'}" Classes="secondary" FontSize="13"
                                        TextWrapping="Wrap" TextAlignment="Center" />
                             <Button Classes="btn primary" HorizontalAlignment="Center" Command="{Binding OpenImageCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <PathIcon Data="{StaticResource Icon.FolderOpen}" />
-                                    <TextBlock Text="Open image" VerticalAlignment="Center" />
+                                    <TextBlock Text="{l:T 'Open image'}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -119,7 +120,7 @@
             <Border Classes="card">
                 <DockPanel>
                     <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="16,12,16,10">
-                        <TextBlock Classes="h3" Text="Output" VerticalAlignment="Center" />
+                        <TextBlock Classes="h3" Text="{l:T 'Output'}" VerticalAlignment="Center" />
                     </Grid>
                     <Border DockPanel.Dock="Top" Classes="divider" />
                     <Panel>
@@ -143,7 +144,7 @@
                                         <Button Grid.Column="1" Classes="btn" Command="{Binding SaveImageCommand}">
                                             <StackPanel Orientation="Horizontal" Spacing="6">
                                                 <PathIcon Data="{StaticResource Icon.Save}" />
-                                                <TextBlock Text="Save image" VerticalAlignment="Center" />
+                                                <TextBlock Text="{l:T 'Save image'}" VerticalAlignment="Center" />
                                             </StackPanel>
                                         </Button>
                                     </Grid>
@@ -151,7 +152,7 @@
                                 <ItemsControl ItemsSource="{Binding Results}" ItemTemplate="{StaticResource LabeledValueRow}" />
                             </StackPanel>
                         </ScrollViewer>
-                        <TextBlock Text="The result appears here as you type." Classes="muted" FontSize="13"
+                        <TextBlock Text="{l:T 'The result appears here as you type.'}" Classes="muted" FontSize="13"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24"
                                    IsVisible="{Binding HasNoOutput}" />
                     </Panel>

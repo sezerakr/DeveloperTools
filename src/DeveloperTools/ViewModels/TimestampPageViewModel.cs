@@ -10,6 +10,8 @@ using CommunityToolkit.Mvvm.Input;
 using DeveloperTools.Services;
 using DeveloperTools.Tools;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.ViewModels;
 
 public sealed record ZoneOption(TimeZoneInfo Zone, string Name)
@@ -44,8 +46,8 @@ public partial class TimestampPageViewModel : PageViewModel
         Tick();
     }
 
-    public override string Title => "Timestamp";
-    public override string Subtitle => "Unix time, ISO 8601 and time zones";
+    public override string Title => Loc.T("Timestamp");
+    public override string Subtitle => Loc.T("Unix time, ISO 8601 and time zones");
 
     // ------------------------------------------------------------------ live clock
 
@@ -116,7 +118,7 @@ public partial class TimestampPageViewModel : PageViewModel
         var parsed = TimeTools.Parse(Input, Zone.Zone);
         if (parsed is null)
         {
-            Error = "Not recognised. Try 1700000000, 1700000000000, 2024-05-01T10:00:00Z, 01.05.2024 10:00 or \"now\".";
+            Error = Loc.T("Not recognised. Try 1700000000, 1700000000000, 2024-05-01T10:00:00Z, 01.05.2024 10:00 or \"now\".");
             return;
         }
 
@@ -146,7 +148,7 @@ public partial class TimestampPageViewModel : PageViewModel
         var b = TimeTools.Parse(To, Zone.Zone);
         if (a is null || b is null)
         {
-            DifferenceText = "Enter two dates or timestamps.";
+            DifferenceText = Loc.T("Enter two dates or timestamps.");
             DifferenceDetail = "";
             return;
         }

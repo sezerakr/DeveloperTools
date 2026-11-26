@@ -8,6 +8,8 @@ using CommunityToolkit.Mvvm.Input;
 using DeveloperTools.Services;
 using DeveloperTools.Tools;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.ViewModels;
 
 /// <summary>An entry in the command palette.</summary>
@@ -37,8 +39,13 @@ public partial class MainWindowViewModel : ObservableObject
                 UpdateHint = Updates.Status;
         };
         Settings = new SettingsPageViewModel(settings, dialogs, Updates);
+        Settings.RestartRequested += (_, _) => RestartRequested?.Invoke(this, EventArgs.Empty);
+        Settings.QuitRequested += (_, _) => QuitRequested?.Invoke(this, EventArgs.Empty);
         Markdown.OpenSettingsRequested += (_, _) => ShowSettings();
-        _currentPage = Markdown;
+        Home = new HomePageViewModel(settings, Tools, NavigateTo);
+        Home.FavoritesChanged += (_, _) => OnPropertyChanged(nameof(IsCurrentFavorite));
+        // Start on Home once the user has favorites; otherwise on Markdown as before.
+        _currentPage = settings.Current.FavoriteTools.Count > 0 ? Home : Markdown;
         _commands = BuildCommands();
     }
 
@@ -54,6 +61,44 @@ public partial class MainWindowViewModel : ObservableObject
     private EncodePageViewModel? _encode;
 
     public MarkdownPageViewModel Markdown { get; }
+    public HomePageViewModel Home { get; }
+
+    /// <summary>Every tool, in sidebar order (used by Home and favorites).</summary>
+    public static IReadOnlyList<ToolInfo> Tools { get; } =
+    [
+        new("markdown", Loc.T("Markdown"), Loc.T("Browse, preview and edit markdown files"), "Icon.Markdown"),
+        new("json", Loc.T("JSON"), Loc.T("Format, validate and repair JSON"), "Icon.Json"),
+        new("diff", Loc.T("Diff"), Loc.T("Compare two texts, files or JSON documents"), "Icon.Diff"),
+        new("regex", Loc.T("Regex"), Loc.T("Test .NET regular expressions with live matches"), "Icon.Regex"),
+        new("timestamp", Loc.T("Timestamp"), Loc.T("Unix time, ISO 8601 and time zones"), "Icon.Clock"),
+        new("text", Loc.T("Text"), Loc.T("Change case, sort and clean lines, count words"), "Icon.Text"),
+        new("generators", Loc.T("Generators"), Loc.T("Passwords, keys, UUIDs, test data and QR codes"), "Icon.Generate"),
+        new("encode", Loc.T("Encode / Decode"), Loc.T("Base64, URL, HTML, hex, Unicode, images, JWT and hashes"), "Icon.Swap"),
+    ];
+
+    /// <summary>Short key of the visible tool ("json", …), or null for Home and Settings.</summary>
+    public string? CurrentToolKey => CurrentPage switch
+    {
+        MarkdownPageViewModel => "markdown",
+        JsonPageViewModel => "json",
+        DiffPageViewModel => "diff",
+        RegexPageViewModel => "regex",
+        TimestampPageViewModel => "timestamp",
+        TextPageViewModel => "text",
+        GeneratorsPageViewModel => "generators",
+        EncodePageViewModel => "encode",
+        _ => null
+    };
+
+    public bool CanFavorite => CurrentToolKey is not null;
+    public bool IsCurrentFavorite => CurrentToolKey is { } key && Home.IsFavorite(key);
+
+    [RelayCommand]
+    private void ToggleCurrentFavorite()
+    {
+        if (CurrentToolKey is { } key)
+            Home.Toggle(key);
+    }
     public JsonPageViewModel Json => _json ??= new JsonPageViewModel(_settings, _dialogs, Snippets);
     public DiffPageViewModel Diff => _diff ??= new DiffPageViewModel(_settings, _dialogs);
     public RegexPageViewModel Regex => _regex ??= new RegexPageViewModel(_settings, _dialogs, Snippets);
@@ -70,13 +115,16 @@ public partial class MainWindowViewModel : ObservableObject
     {
         oldValue?.OnHidden();
         newValue.OnShown();
+        OnPropertyChanged(nameof(CurrentToolKey));
+        OnPropertyChanged(nameof(CanFavorite));
+        OnPropertyChanged(nameof(IsCurrentFavorite));
     }
 
     public string Version { get; } =
         "v" + (typeof(MainWindowViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.0.0");
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsMarkdownActive), nameof(IsJsonActive), nameof(IsDiffActive), nameof(IsRegexActive),
+    [NotifyPropertyChangedFor(nameof(IsHomeActive), nameof(IsMarkdownActive), nameof(IsJsonActive), nameof(IsDiffActive), nameof(IsRegexActive),
         nameof(IsTimestampActive), nameof(IsTextActive), nameof(IsGeneratorsActive), nameof(IsEncodeActive), nameof(IsSettingsActive))]
     private PageViewModel _currentPage;
 
@@ -94,6 +142,7 @@ public partial class MainWindowViewModel : ObservableObject
         Settings.Theme = isDark ? "Light" : "Dark"; // saves and applies via the settings page model
     }
 
+    public bool IsHomeActive => CurrentPage == Home;
     public bool IsMarkdownActive => CurrentPage == Markdown;
     public bool IsJsonActive => CurrentPage is JsonPageViewModel;
     public bool IsDiffActive => CurrentPage is DiffPageViewModel;
@@ -109,6 +158,7 @@ public partial class MainWindowViewModel : ObservableObject
     {
         PageViewModel? page = name?.Trim().TrimStart('#').ToLowerInvariant() switch
         {
+            "home" => Home,
             "markdown" or "md" => Markdown,
             "json" => Json,
             "diff" or "compare" => Diff,
@@ -124,6 +174,7 @@ public partial class MainWindowViewModel : ObservableObject
             CurrentPage = page;
     }
 
+    [RelayCommand] private void ShowHome() => CurrentPage = Home;
     [RelayCommand] private void ShowMarkdown() => CurrentPage = Markdown;
     [RelayCommand] private void ShowJson() => CurrentPage = Json;
     [RelayCommand] private void ShowDiff() => CurrentPage = Diff;
@@ -201,48 +252,49 @@ public partial class MainWindowViewModel : ObservableObject
         void Go(PageViewModel page) => CurrentPage = page;
         return
         [
-            new("Markdown", "Go to", "md notes docs files", () => Go(Markdown)),
-            new("JSON", "Go to", "format validate repair minify", () => Go(Json)),
-            new("Diff", "Go to", "compare difference text files", () => Go(Diff)),
-            new("Regex", "Go to", "regular expression test match", () => Go(Regex)),
-            new("Timestamp", "Go to", "unix epoch date time zone iso", () => Go(Timestamp)),
-            new("Text", "Go to", "case sort lines count words", () => Go(Text)),
-            new("Generators", "Go to", "password key uuid guid lorem fake qr", () => Go(Generators)),
-            new("Encode / Decode", "Go to", "base64 url html hex jwt hash unicode image", () => Go(Encode)),
-            new("Settings", "Go to", "preferences options folders theme", () => Go(Settings)),
+            new(Loc.T("Home"), Loc.T("Go to"), "home favorites start", () => Go(Home)),
+            new(Loc.T("Markdown"), Loc.T("Go to"), "markdown md notes docs files", () => Go(Markdown)),
+            new(Loc.T("JSON"), Loc.T("Go to"), "json format validate repair minify", () => Go(Json)),
+            new(Loc.T("Diff"), Loc.T("Go to"), "diff compare difference text files", () => Go(Diff)),
+            new(Loc.T("Regex"), Loc.T("Go to"), "regex regular expression test match", () => Go(Regex)),
+            new(Loc.T("Timestamp"), Loc.T("Go to"), "timestamp unix epoch date time zone iso", () => Go(Timestamp)),
+            new(Loc.T("Text"), Loc.T("Go to"), "text case sort lines count words", () => Go(Text)),
+            new(Loc.T("Generators"), Loc.T("Go to"), "generators password key uuid guid lorem fake qr", () => Go(Generators)),
+            new(Loc.T("Encode / Decode"), Loc.T("Go to"), "encode / decode base64 url html hex jwt hash unicode image", () => Go(Encode)),
+            new(Loc.T("Settings"), Loc.T("Go to"), "settings preferences options folders theme", () => Go(Settings)),
 
-            new("Format JSON", "JSON", "pretty beautify indent", () => { Go(Json); Json.FormatCommand.Execute(null); }, "Ctrl+Shift+F"),
-            new("Minify JSON", "JSON", "compact", () => { Go(Json); Json.MinifyCommand.Execute(null); }, "Ctrl+Shift+M"),
-            new("Repair JSON", "JSON", "fix correct broken", () => { Go(Json); Json.RepairCommand.Execute(null); }, "Ctrl+Shift+R"),
-            new("Sort JSON keys", "JSON", "order alphabetical", () => { Go(Json); Json.SortKeysCommand.Execute(null); }),
-            new("JSON tree, query, code and YAML", "JSON", "jsonpath tree view kotlin csharp typescript yaml panel", () => { Go(Json); Json.Panel.IsOpen = true; }),
-            new("YAML to JSON", "JSON", "convert yml", () => { Go(Json); Json.FromYamlCommand.Execute(null); }),
-            new("Open JSON file", "JSON", "load", () => { Go(Json); Json.OpenCommand.Execute(null); }, "Ctrl+O"),
+            new(Loc.T("Format JSON"), Loc.T("JSON"), "format json pretty beautify indent", () => { Go(Json); Json.FormatCommand.Execute(null); }, "Ctrl+Shift+F"),
+            new(Loc.T("Minify JSON"), Loc.T("JSON"), "minify json compact", () => { Go(Json); Json.MinifyCommand.Execute(null); }, "Ctrl+Shift+M"),
+            new(Loc.T("Repair JSON"), Loc.T("JSON"), "repair json fix correct broken", () => { Go(Json); Json.RepairCommand.Execute(null); }, "Ctrl+Shift+R"),
+            new(Loc.T("Sort JSON keys"), Loc.T("JSON"), "sort json keys order alphabetical", () => { Go(Json); Json.SortKeysCommand.Execute(null); }),
+            new(Loc.T("JSON tree, query, code and YAML"), Loc.T("JSON"), "json tree, query, code and yaml jsonpath tree view kotlin csharp typescript yaml panel", () => { Go(Json); Json.Panel.IsOpen = true; }),
+            new(Loc.T("YAML to JSON"), Loc.T("JSON"), "yaml to json convert yml", () => { Go(Json); Json.FromYamlCommand.Execute(null); }),
+            new(Loc.T("Open JSON file"), Loc.T("JSON"), "open json file load", () => { Go(Json); Json.OpenCommand.Execute(null); }, "Ctrl+O"),
 
-            new("Compare texts", "Diff", "diff run compare", () => { Go(Diff); Diff.CompareCommand.Execute(null); }, "Ctrl+Enter"),
-            new("Open original file", "Diff", "left compare", () => { Go(Diff); Diff.OpenLeftCommand.Execute(null); }),
-            new("Open modified file", "Diff", "right compare", () => { Go(Diff); Diff.OpenRightCommand.Execute(null); }),
-            new("Swap diff sides", "Diff", "reverse", () => { Go(Diff); Diff.SwapCommand.Execute(null); }),
-            new("Copy diff as patch", "Diff", "unified git", () => { Go(Diff); Diff.CopyPatchCommand.Execute(null); }),
+            new(Loc.T("Compare texts"), Loc.T("Diff"), "compare texts diff run compare", () => { Go(Diff); Diff.CompareCommand.Execute(null); }, "Ctrl+Enter"),
+            new(Loc.T("Open original file"), Loc.T("Diff"), "open original file left compare", () => { Go(Diff); Diff.OpenLeftCommand.Execute(null); }),
+            new(Loc.T("Open modified file"), Loc.T("Diff"), "open modified file right compare", () => { Go(Diff); Diff.OpenRightCommand.Execute(null); }),
+            new(Loc.T("Swap diff sides"), Loc.T("Diff"), "swap diff sides reverse", () => { Go(Diff); Diff.SwapCommand.Execute(null); }),
+            new(Loc.T("Copy diff as patch"), Loc.T("Diff"), "copy diff as patch unified git", () => { Go(Diff); Diff.CopyPatchCommand.Execute(null); }),
 
-            new("New password", "Generators", "generate random secure", () => { Go(Generators); Generators.Tab = GeneratorTab.Password; Generators.GeneratePasswordsCommand.Execute(null); }),
-            new("New secret key", "Generators", "api jwt aes token random", () => { Go(Generators); Generators.Tab = GeneratorTab.Secret; Generators.GenerateSecretsCommand.Execute(null); }),
-            new("New UUID / GUID", "Generators", "guid identifier v4 v7", () => { Go(Generators); Generators.Tab = GeneratorTab.Uuid; Generators.GenerateUuidsCommand.Execute(null); }),
-            new("Lorem ipsum", "Generators", "placeholder text dummy", () => { Go(Generators); Generators.Tab = GeneratorTab.Lorem; }),
-            new("Fake test data", "Generators", "mock sample names emails csv", () => { Go(Generators); Generators.Tab = GeneratorTab.Fake; }),
-            new("QR code", "Generators", "qrcode wifi link", () => { Go(Generators); Generators.Tab = GeneratorTab.Qr; }),
+            new(Loc.T("New password"), Loc.T("Generators"), "new password generate random secure", () => { Go(Generators); Generators.Tab = GeneratorTab.Password; Generators.GeneratePasswordsCommand.Execute(null); }),
+            new(Loc.T("New secret key"), Loc.T("Generators"), "new secret key api jwt aes token random", () => { Go(Generators); Generators.Tab = GeneratorTab.Secret; Generators.GenerateSecretsCommand.Execute(null); }),
+            new(Loc.T("New UUID / GUID"), Loc.T("Generators"), "new uuid / guid guid identifier v4 v7", () => { Go(Generators); Generators.Tab = GeneratorTab.Uuid; Generators.GenerateUuidsCommand.Execute(null); }),
+            new(Loc.T("Lorem ipsum"), Loc.T("Generators"), "lorem ipsum placeholder text dummy", () => { Go(Generators); Generators.Tab = GeneratorTab.Lorem; }),
+            new(Loc.T("Fake test data"), Loc.T("Generators"), "fake test data mock sample names emails csv", () => { Go(Generators); Generators.Tab = GeneratorTab.Fake; }),
+            new(Loc.T("QR code"), Loc.T("Generators"), "qr code qrcode wifi link", () => { Go(Generators); Generators.Tab = GeneratorTab.Qr; }),
 
-            new("Base64 encode / decode", "Encode", "b64", () => { Go(Encode); Encode.Mode = CodecMode.Base64; }),
-            new("Decode JWT", "Encode", "token jwt bearer claims", () => { Go(Encode); Encode.Mode = CodecMode.Jwt; }),
-            new("Hash text (SHA-256, MD5…)", "Encode", "sha md5 hmac checksum", () => { Go(Encode); Encode.Mode = CodecMode.Hash; }),
-            new("URL encode / decode", "Encode", "percent escape", () => { Go(Encode); Encode.Mode = CodecMode.Url; }),
-            new("Image to Base64", "Encode", "data uri picture png", () => { Go(Encode); Encode.Mode = CodecMode.Image; }),
-            new("Unicode escape", "Encode", "\\u escape emoji", () => { Go(Encode); Encode.Mode = CodecMode.Unicode; }),
+            new(Loc.T("Base64 encode / decode"), Loc.T("Encode"), "base64 encode / decode b64", () => { Go(Encode); Encode.Mode = CodecMode.Base64; }),
+            new(Loc.T("Decode JWT"), Loc.T("Encode"), "decode jwt token jwt bearer claims", () => { Go(Encode); Encode.Mode = CodecMode.Jwt; }),
+            new(Loc.T("Hash text (SHA-256, MD5…)"), Loc.T("Encode"), "hash text (sha-256, md5…) sha md5 hmac checksum", () => { Go(Encode); Encode.Mode = CodecMode.Hash; }),
+            new(Loc.T("URL encode / decode"), Loc.T("Encode"), "url encode / decode percent escape", () => { Go(Encode); Encode.Mode = CodecMode.Url; }),
+            new(Loc.T("Image to Base64"), Loc.T("Encode"), "image to base64 data uri picture png", () => { Go(Encode); Encode.Mode = CodecMode.Image; }),
+            new(Loc.T("Unicode escape"), Loc.T("Encode"), "unicode escape \\u escape emoji", () => { Go(Encode); Encode.Mode = CodecMode.Unicode; }),
 
-            new("Current Unix time", "Timestamp", "now epoch", () => { Go(Timestamp); Timestamp.UseNowCommand.Execute(null); }),
+            new(Loc.T("Current Unix time"), Loc.T("Timestamp"), "current unix time now epoch", () => { Go(Timestamp); Timestamp.UseNowCommand.Execute(null); }),
 
-            new("Toggle light / dark", "App", "theme dark light mode", () => ToggleTheme()),
-            new("Toggle sidebar", "App", "collapse expand menu", () => ToggleSidebar()),
+            new(Loc.T("Toggle light / dark"), Loc.T("App"), "toggle light / dark theme dark light mode", () => ToggleTheme()),
+            new(Loc.T("Toggle sidebar"), Loc.T("App"), "toggle sidebar collapse expand menu", () => ToggleSidebar()),
         ];
     }
 
@@ -295,12 +347,12 @@ public partial class MainWindowViewModel : ObservableObject
     private static (ClipKind, string, string) Detect(string t)
     {
         if (JwtPattern.IsMatch(t))
-            return (ClipKind.Jwt, "Your clipboard has a JWT.", "Decode it");
+            return (ClipKind.Jwt, Loc.T("Your clipboard has a JWT."), Loc.T("Decode it"));
         if (t.Length >= 2 && t[0] is '{' or '[' && JsonTools.Validate(t) is { IsValid: true, RootKind: "object" or "array" })
-            return (ClipKind.Json, "Your clipboard has JSON.", "Open in JSON");
+            return (ClipKind.Json, Loc.T("Your clipboard has JSON."), Loc.T("Open in JSON"));
         if (t.Length is 10 or 13 && t.All(char.IsAsciiDigit) &&
             TimeTools.Parse(t, TimeZoneInfo.Utc) is { } p && p.Value.Year is > 2000 and < 2100)
-            return (ClipKind.Timestamp, $"Your clipboard has a Unix timestamp ({p.Value.ToLocalTime():yyyy-MM-dd HH:mm}).", "Convert it");
+            return (ClipKind.Timestamp, Loc.F("Your clipboard has a Unix timestamp ({0:yyyy-MM-dd HH:mm}).", p.Value.ToLocalTime()), Loc.T("Convert it"));
         if (t.Length >= 24 && t.Length % 4 == 0 && !t.Contains(' ') &&
             t.All(c => char.IsAsciiLetterOrDigit(c) || c is '+' or '/' or '=') && t.Any(char.IsDigit) && t.Any(char.IsUpper) && t.Any(char.IsLower))
         {
@@ -309,7 +361,7 @@ public partial class MainWindowViewModel : ObservableObject
                 var bytes = Convert.FromBase64String(t);
                 var decoded = new System.Text.UTF8Encoding(false, true).GetString(bytes);
                 if (decoded.All(c => !char.IsControl(c) || c is '\n' or '\r' or '\t'))
-                    return (ClipKind.Base64, "Your clipboard looks like Base64 text.", "Decode it");
+                    return (ClipKind.Base64, Loc.T("Your clipboard looks like Base64 text."), Loc.T("Decode it"));
             }
             catch (Exception e) when (e is FormatException or System.Text.DecoderFallbackException)
             {
@@ -362,6 +414,9 @@ public partial class MainWindowViewModel : ObservableObject
 
     /// <summary>Raised to close the window and start the updated app.</summary>
     public event EventHandler? RestartRequested;
+
+    /// <summary>Raised to close the app (e.g. the uninstaller has been started).</summary>
+    public event EventHandler? QuitRequested;
 
     [RelayCommand]
     private void RestartForUpdate() => RestartRequested?.Invoke(this, EventArgs.Empty);

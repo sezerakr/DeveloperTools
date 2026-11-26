@@ -9,6 +9,8 @@ using CommunityToolkit.Mvvm.Input;
 using DeveloperTools.Models;
 using DeveloperTools.Services;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.ViewModels;
 
 public partial class SettingsPageViewModel : PageViewModel
@@ -52,8 +54,8 @@ public partial class SettingsPageViewModel : PageViewModel
         OnPropertyChanged(nameof(HasNoFolders));
     }
 
-    public override string Title => "Settings";
-    public override string Subtitle => "General preferences and per-tool settings";
+    public override string Title => Loc.T("Settings");
+    public override string Subtitle => Loc.T("General preferences and per-tool settings");
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsGeneralTab), nameof(IsMarkdownTab), nameof(IsJsonTab))]
@@ -118,11 +120,65 @@ public partial class SettingsPageViewModel : PageViewModel
     public string UpdateStatus => _updates.Status.Length > 0
         ? _updates.Status
         : _settings.Current.LastUpdateCheck is { } last
-            ? $"Last checked {last.ToLocalTime():d MMM yyyy, HH:mm}."
+            ? Loc.F("Last checked {0:d MMM yyyy, HH:mm}.", last.ToLocalTime())
             : "Not checked yet.";
 
     [RelayCommand]
     private Task CheckForUpdates() => _updates.CheckAsync(manual: true);
+
+    // ------------------------------------------------------------------ language
+
+    public IReadOnlyList<LanguageInfo> Languages { get; } = Loc.Available();
+
+    private LanguageInfo? _language;
+
+    public LanguageInfo? Language
+    {
+        get => _language ??= Languages.FirstOrDefault(l => l.Code == _settings.Current.Language) ?? Languages[0];
+        set
+        {
+            if (value is null || value.Code == _settings.Current.Language)
+                return;
+            _language = value;
+            _settings.Current.Language = value.Code;
+            _settings.Save();
+            OnPropertyChanged();
+            LanguageNeedsRestart = true;
+        }
+    }
+
+    /// <summary>The new language is used after a restart (views are translated once when created).</summary>
+    [ObservableProperty]
+    private bool _languageNeedsRestart;
+
+    public bool CanEditTranslations => !AppServices.IsBrowser;
+
+    /// <summary>Copies the language file to the user's lang folder (if needed) and shows it for editing.</summary>
+    [RelayCommand]
+    private void EditTranslations()
+    {
+        var code = Language?.Code is { } c && c != "System" ? c : Loc.Code;
+        if (Loc.ExportForEditing(code) is { } path)
+            _dialogs.RevealInExplorer(path);
+    }
+
+    /// <summary>Raised to restart the app (language change) or to close it (uninstall).</summary>
+    public event EventHandler? RestartRequested;
+    public event EventHandler? QuitRequested;
+
+    [RelayCommand]
+    private void RestartNow() => RestartRequested?.Invoke(this, EventArgs.Empty);
+
+    // ------------------------------------------------------------------ uninstall
+
+    public bool CanUninstall => UninstallService.IsAvailable;
+
+    [RelayCommand]
+    private void Uninstall()
+    {
+        UninstallService.StartUninstaller();
+        QuitRequested?.Invoke(this, EventArgs.Empty);
+    }
 
     public bool DetectClipboard
     {
@@ -222,7 +278,7 @@ public partial class SettingsPageViewModel : PageViewModel
         path = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
         if (_settings.Current.MarkdownFolders.Any(f => string.Equals(f, path, StringComparison.OrdinalIgnoreCase)))
         {
-            FolderError = "That folder is already in the list.";
+            FolderError = Loc.T("That folder is already in the list.");
             return;
         }
 

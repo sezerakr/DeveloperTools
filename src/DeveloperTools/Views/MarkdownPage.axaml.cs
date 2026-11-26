@@ -223,6 +223,65 @@ public partial class MarkdownPage : UserControl
     private IBrush Resource(string key) =>
         this.TryFindResource(key, ActualThemeVariant, out var value) && value is IBrush brush ? brush : Brushes.Gray;
 
+    // ------------------------------------------------------------------ explorer menu
+
+    /// <summary>The node that was right-clicked (not necessarily the selected one, so opening is not forced).</summary>
+    private FileNode? _menuNode;
+
+    private void OnExplorerContextRequested(object? sender, ContextRequestedEventArgs e)
+    {
+        _menuNode = (e.Source as StyledElement)?.DataContext as FileNode;
+        if (_menuNode is null)
+        {
+            e.Handled = true; // empty space: no menu
+            return;
+        }
+
+        var isFile = _menuNode.IsFile;
+        var desktop = !DeveloperTools.Services.AppServices.IsBrowser;
+        MenuOpen.IsVisible = isFile;
+        MenuRename.IsVisible = isFile;
+        MenuDelete.IsVisible = isFile;
+        MenuSeparator.IsVisible = isFile;
+        MenuReveal.IsVisible = desktop;
+        if (!isFile && !desktop)
+            e.Handled = true;
+    }
+
+    private async void OnMenuOpen(object? sender, RoutedEventArgs e)
+    {
+        if (_vm is not null && _menuNode is { IsFile: true } node)
+            await _vm.OpenFileAsync(node.FullPath);
+    }
+
+    private async void OnMenuRename(object? sender, RoutedEventArgs e)
+    {
+        if (_vm is not null && _menuNode is { IsFile: true } node)
+            await _vm.RenameFileAsync(node.FullPath);
+    }
+
+    private void OnMenuReveal(object? sender, RoutedEventArgs e)
+    {
+        if (_vm is not null && _menuNode is { } node)
+            _vm.RevealPath(node.FullPath);
+    }
+
+    private async void OnMenuDelete(object? sender, RoutedEventArgs e)
+    {
+        if (_vm is not null && _menuNode is { IsFile: true } node)
+            await _vm.DeleteFileAsync(node.FullPath);
+    }
+
+    /// <summary>F2 renames the selected file, like in Windows Explorer.</summary>
+    private async void OnExplorerKeyDown(object? sender, KeyEventArgs args)
+    {
+        if (args.Key == Key.F2 && _vm?.SelectedNode is { IsFile: true } node)
+        {
+            args.Handled = true;
+            await _vm.RenameFileAsync(node.FullPath);
+        }
+    }
+
     private void OnFormatClick(object? sender, RoutedEventArgs e)
     {
         switch ((sender as Control)?.Tag as string)
@@ -248,7 +307,7 @@ public partial class MarkdownPage : UserControl
     private void UpdateCaret()
     {
         var caret = Editor.TextArea.Caret;
-        CaretText.Text = _vm?.ViewMode == ViewMode.Preview ? "" : $"Ln {caret.Line}, Col {caret.Column}";
+        CaretText.Text = _vm?.ViewMode == ViewMode.Preview ? "" : DeveloperTools.Localization.Loc.F("Ln {0}, Col {1}", caret.Line, caret.Column);
     }
 
     /// <summary>In split mode, keep the preview at the same relative position as the editor.</summary>

@@ -21,7 +21,19 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var settings = new SettingsService();
+            Localization.Loc.Load(settings.Current.Language);
             ApplyTheme(settings.Current.Theme);
+
+            if (AppServices.UninstallMode)
+            {
+                // "DeveloperTools --uninstall" (Windows Apps & features, Settings, Linux script): only the uninstall window.
+                desktop.MainWindow = new UninstallWindow();
+                base.OnFrameworkInitializationCompleted();
+                return;
+            }
+
+            if (SelfTest.LogPath is null)
+                UninstallService.RegisterIfNeeded(); // Windows "Apps" entry, written only when missing or outdated
 
             var window = new MainWindow();
             if (SelfTest.LogPath is null) // the self-test must not move or save the user's window placement
@@ -40,6 +52,7 @@ public partial class App : Application
         {
             // Browser: the whole app is one view inside the page.
             var settings = new SettingsService();
+            Localization.Loc.Load(settings.Current.Language);
             ApplyTheme(settings.Current.Theme);
 
             var view = new MainView();

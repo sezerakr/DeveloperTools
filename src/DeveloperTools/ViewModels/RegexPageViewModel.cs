@@ -12,6 +12,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DeveloperTools.Services;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.ViewModels;
 
 public sealed record RegexGroupItem(string Name, string Value, bool Success);
@@ -68,8 +70,8 @@ public partial class RegexPageViewModel : PageViewModel
         TestDocument.Text = "Contact: ada@example.com, grace.h@example.org\nInvalid: not-an-email@, @example.com\nSupport <help+tag@example.co.uk>";
     }
 
-    public override string Title => "Regex";
-    public override string Subtitle => "Test .NET regular expressions with live matches";
+    public override string Title => Loc.T("Regex");
+    public override string Subtitle => Loc.T("Test .NET regular expressions with live matches");
 
     public SnippetsViewModel Snippets { get; }
     public TextDocument TestDocument { get; } = new();
@@ -178,9 +180,9 @@ public partial class RegexPageViewModel : PageViewModel
 
             var summary = result.count switch
             {
-                0 => "No matches",
-                1 => "1 match",
-                _ => $"{result.count:N0} matches"
+                0 => Loc.T("No matches"),
+                1 => Loc.T("1 match"),
+                _ => Loc.F("{0:N0} matches", result.count)
             } + (result.count > MaxListed ? $" (first {MaxListed:N0} listed)" : "");
             Apply(version, null, result.listed, result.ranges, result.count, result.replaced, summary);
         }
@@ -307,7 +309,7 @@ public partial class RegexPageViewModel : PageViewModel
         }
         catch (Exception e) when (e is JsonException or KeyNotFoundException or InvalidOperationException)
         {
-            Error = "This snippet could not be read.";
+            Error = Loc.T("This snippet could not be read.");
         }
     }
 

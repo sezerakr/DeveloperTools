@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:DeveloperTools.Localization"
              xmlns:vm="using:DeveloperTools.ViewModels"
              xmlns:c="using:DeveloperTools.Converters"
              xmlns:ae="using:AvaloniaEdit"
@@ -57,13 +58,13 @@
                     </StackPanel>
                 </Grid>
                 <WrapPanel>
-                    <CheckBox Content="Ignore case" IsChecked="{Binding IgnoreCase}" Margin="0,0,16,0" ToolTip.Tip="RegexOptions.IgnoreCase (i)" />
-                    <CheckBox Content="Multiline" IsChecked="{Binding Multiline}" Margin="0,0,16,0" ToolTip.Tip="^ and $ match at every line (m)" />
-                    <CheckBox Content="Dot matches newline" IsChecked="{Binding Singleline}" Margin="0,0,16,0" ToolTip.Tip="RegexOptions.Singleline (s)" />
-                    <CheckBox Content="Ignore whitespace" IsChecked="{Binding IgnoreWhitespace}" Margin="0,0,16,0"
-                              ToolTip.Tip="Spaces in the pattern are ignored; # starts a comment (x)" />
-                    <CheckBox Content="Explicit capture" IsChecked="{Binding ExplicitCapture}" Margin="0,0,16,0"
-                              ToolTip.Tip="Only named groups capture (n)" />
+                    <CheckBox Content="{l:T 'Ignore case'}" IsChecked="{Binding IgnoreCase}" Margin="0,0,16,0" ToolTip.Tip="{l:T 'RegexOptions.IgnoreCase (i)'}" />
+                    <CheckBox Content="{l:T 'Multiline'}" IsChecked="{Binding Multiline}" Margin="0,0,16,0" ToolTip.Tip="{l:T '^ and $ match at every line (m)'}" />
+                    <CheckBox Content="{l:T 'Dot matches newline'}" IsChecked="{Binding Singleline}" Margin="0,0,16,0" ToolTip.Tip="{l:T 'RegexOptions.Singleline (s)'}" />
+                    <CheckBox Content="{l:T 'Ignore whitespace'}" IsChecked="{Binding IgnoreWhitespace}" Margin="0,0,16,0"
+                              ToolTip.Tip="{l:T 'Spaces in the pattern are ignored; # starts a comment (x)'}" />
+                    <CheckBox Content="{l:T 'Explicit capture'}" IsChecked="{Binding ExplicitCapture}" Margin="0,0,16,0"
+                              ToolTip.Tip="{l:T 'Only named groups capture (n)'}" />
                 </WrapPanel>
             </StackPanel>
         </Border>
@@ -82,8 +83,8 @@
                 <Border DockPanel.Dock="Top" Height="38" Padding="14,0" Background="{DynamicResource Bg.Subtle}"
                         BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
                     <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
-                        <TextBlock Text="Test text" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource Fg.Primary}" />
-                        <TextBlock Grid.Column="1" Text="Matches are highlighted as you type" FontSize="12" Classes="muted" />
+                        <TextBlock Text="{l:T 'Test text'}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource Fg.Primary}" />
+                        <TextBlock Grid.Column="1" Text="{l:T 'Matches are highlighted as you type'}" FontSize="12" Classes="muted" />
                     </Grid>
                 </Border>
                 <ae:TextEditor x:Name="TestEditor" Document="{Binding TestDocument}" FontSize="{Binding EditorFontSize}"
@@ -98,13 +99,13 @@
                     <Border DockPanel.Dock="Top" Padding="14,0" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1"
                             Background="{DynamicResource Bg.Subtle}">
                         <StackPanel Orientation="Horizontal">
-                            <RadioButton Classes="tab" GroupName="regex-panel" Content="Matches"
+                            <RadioButton Classes="tab" GroupName="regex-panel" Content="{l:T 'Matches'}"
                                          IsChecked="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Matches}" />
-                            <RadioButton Classes="tab" GroupName="regex-panel" Content="Replace"
+                            <RadioButton Classes="tab" GroupName="regex-panel" Content="{l:T 'Replace'}"
                                          IsChecked="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Replace}" />
-                            <RadioButton Classes="tab" GroupName="regex-panel" Content="Code"
+                            <RadioButton Classes="tab" GroupName="regex-panel" Content="{l:T 'Code'}"
                                          IsChecked="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Code}" />
-                            <RadioButton Classes="tab" GroupName="regex-panel" Content="Reference"
+                            <RadioButton Classes="tab" GroupName="regex-panel" Content="{l:T 'Reference'}"
                                          IsChecked="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Reference}" />
                         </StackPanel>
                     </Border>
@@ -113,11 +114,11 @@
                         <!-- matches -->
                         <DockPanel IsVisible="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Matches}">
                             <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="14,8,8,8" IsVisible="{Binding HasMatches}">
-                                <TextBlock Text="Click a match to select it in the text." FontSize="12" Classes="muted" VerticalAlignment="Center" />
-                                <Button Grid.Column="1" Classes="btn ghost xs" Content="Copy all" Command="{Binding CopyMatchesCommand}"
-                                        ToolTip.Tip="Copy every match, one per line" />
+                                <TextBlock Text="{l:T 'Click a match to select it in the text.'}" FontSize="12" Classes="muted" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Classes="btn ghost xs" Content="{l:T 'Copy all'}" Command="{Binding CopyMatchesCommand}"
+                                        ToolTip.Tip="{l:T 'Copy every match, one per line'}" />
                             </Grid>
-                            <TextBlock DockPanel.Dock="Top" Text="No matches yet." Classes="muted" FontSize="13" Margin="14,14"
+                            <TextBlock DockPanel.Dock="Top" Text="{l:T 'No matches yet.'}" Classes="muted" FontSize="13" Margin="14,14"
                                        IsVisible="{Binding !HasMatches}" />
                             <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                                 <ItemsControl ItemsSource="{Binding Matches}">
@@ -156,12 +157,12 @@
 
                         <!-- replace -->
                         <DockPanel Margin="14" IsVisible="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Replace}">
-                            <TextBlock DockPanel.Dock="Top" Classes="field" Text="Replace with" />
+                            <TextBlock DockPanel.Dock="Top" Classes="field" Text="{l:T 'Replace with'}" />
                             <TextBox DockPanel.Dock="Top" Text="{Binding Replacement}" FontFamily="{StaticResource Font.Mono}" FontSize="13"
                                      PlaceholderText="$1, ${name}, $0 for the whole match" />
                             <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,16,0,6">
-                                <TextBlock Classes="field" Text="Result" Margin="0" VerticalAlignment="Center" />
-                                <Button Grid.Column="1" Classes="btn ghost xs" Content="Copy" Command="{Binding CopyReplaceOutputCommand}" />
+                                <TextBlock Classes="field" Text="{l:T 'Result'}" Margin="0" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Classes="btn ghost xs" Content="{l:T 'Copy'}" Command="{Binding CopyReplaceOutputCommand}" />
                             </Grid>
                             <TextBox Classes="code" Text="{Binding ReplaceOutput}" IsReadOnly="True" />
                         </DockPanel>
@@ -170,15 +171,15 @@
                         <ScrollViewer IsVisible="{Binding Panel, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Code}">
                             <StackPanel Margin="14" Spacing="8">
                                 <Grid ColumnDefinitions="*,Auto">
-                                    <TextBlock Classes="field" Text="C#" Margin="0" VerticalAlignment="Center" />
-                                    <Button Grid.Column="1" Classes="btn ghost xs" Content="Copy" Command="{Binding CopyCSharpCommand}" />
+                                    <TextBlock Classes="field" Text="{l:T 'C#'}" Margin="0" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Classes="btn ghost xs" Content="{l:T 'Copy'}" Command="{Binding CopyCSharpCommand}" />
                                 </Grid>
                                 <Border Classes="codebox">
                                     <SelectableTextBlock Classes="value" FontSize="12.5" Text="{Binding CsharpCode}" />
                                 </Border>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,10,0,0">
-                                    <TextBlock Classes="field" Text="JavaScript" Margin="0" VerticalAlignment="Center" />
-                                    <Button Grid.Column="1" Classes="btn ghost xs" Content="Copy" Command="{Binding CopyJavaScriptCommand}" />
+                                    <TextBlock Classes="field" Text="{l:T 'JavaScript'}" Margin="0" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Classes="btn ghost xs" Content="{l:T 'Copy'}" Command="{Binding CopyJavaScriptCommand}" />
                                 </Grid>
                                 <Border Classes="codebox">
                                     <SelectableTextBlock Classes="value" FontSize="12.5" Text="{Binding JavaScriptCode}" />

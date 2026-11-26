@@ -9,6 +9,8 @@ using CommunityToolkit.Mvvm.Input;
 using DeveloperTools.Services;
 using DeveloperTools.Tools;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.ViewModels;
 
 public enum JsonPanelTab
@@ -77,12 +79,12 @@ public partial class JsonTreeNode : ObservableObject
             case JsonObject o:
                 foreach (var (k, v) in o.Take(MaxChildren))
                     list.Add(new JsonTreeNode(k, v, Path + JsonPathKey(k), expanded: _depth < 1, depth: _depth + 1));
-                if (o.Count > MaxChildren) list.Add(new JsonTreeNode($"… {o.Count - MaxChildren:N0} more keys"));
+                if (o.Count > MaxChildren) list.Add(new JsonTreeNode(Loc.F("… {0:N0} more keys", o.Count - MaxChildren)));
                 break;
             case JsonArray a:
                 for (var i = 0; i < Math.Min(a.Count, MaxChildren); i++)
                     list.Add(new JsonTreeNode($"[{i}]", a[i], $"{Path}[{i}]", expanded: _depth < 1 && a.Count <= 20, depth: _depth + 1));
-                if (a.Count > MaxChildren) list.Add(new JsonTreeNode($"… {a.Count - MaxChildren:N0} more items"));
+                if (a.Count > MaxChildren) list.Add(new JsonTreeNode(Loc.F("… {0:N0} more items", a.Count - MaxChildren)));
                 break;
         }
         return list;
@@ -189,7 +191,7 @@ public partial class JsonPanelViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(text))
         {
-            Message = "Paste or type JSON in the editor.";
+            Message = Loc.T("Paste or type JSON in the editor.");
             TreeRoots.Clear();
             return;
         }
@@ -226,7 +228,7 @@ public partial class JsonPanelViewModel : ObservableObject
                     break;
                 case ValueTuple<string, int> q:
                     QueryOutput = q.Item1;
-                    QueryInfo = q.Item2 switch { 0 => "No matches", 1 => "1 match", _ => $"{q.Item2:N0} matches" };
+                    QueryInfo = q.Item2 switch { 0 => Loc.T("No matches"), 1 => Loc.T("1 match"), _ => Loc.F("{0:N0} matches", q.Item2) };
                     break;
                 case string s when tab == JsonPanelTab.Code:
                     CodeOutput = s;

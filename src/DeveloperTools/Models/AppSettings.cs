@@ -8,6 +8,10 @@ public sealed class AppSettings
     // General
     public string Theme { get; set; } = "System";
     public bool DetectClipboard { get; set; } = true;
+    public string Language { get; set; } = "System";
+
+    /// <summary>Tools shown on the Home page ("json", "diff", …), in the order they were added.</summary>
+    public List<string> FavoriteTools { get; set; } = new();
 
     // Updates (desktop): checked against GitHub releases at most once a day
     public bool AutoUpdate { get; set; } = true;

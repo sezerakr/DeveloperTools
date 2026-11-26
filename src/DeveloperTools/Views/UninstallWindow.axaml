@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:DeveloperTools.Localization"
+        x:Class="DeveloperTools.Views.UninstallWindow"
+        Title="{l:T 'Uninstall DeveloperTools'}"
+        Icon="avares://DeveloperTools.Core/Assets/app.ico"
+        Width="460" SizeToContent="Height" CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource Bg.Surface}">
+    <StackPanel Margin="24,22" Spacing="14">
+        <StackPanel x:Name="AskPanel" Spacing="14">
+            <TextBlock Classes="h3" Text="{l:T 'Uninstall DeveloperTools?'}" />
+            <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Fg.Secondary}"
+                       Text="{l:T 'The app, its shortcuts and its entry in the Apps list will be removed.'}" />
+            <CheckBox x:Name="KeepSettings" IsChecked="True" Content="{l:T 'Keep my settings and snippets'}" />
+            <TextBlock TextWrapping="Wrap" FontSize="12" Classes="muted"
+                       Text="{l:T 'Keeping them means a later reinstall starts with your folders, theme, language and snippets.'}" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,6,0,0">
+                <Button x:Name="CancelButton" Classes="btn" Content="{l:T 'Cancel'}" />
+                <Button x:Name="UninstallButton" Classes="btn danger" Content="{l:T 'Uninstall'}" />
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel x:Name="DonePanel" Spacing="14" IsVisible="False">
+            <TextBlock Classes="h3" Text="{l:T 'DeveloperTools was removed'}" />
+            <TextBlock x:Name="DoneText" TextWrapping="Wrap" Foreground="{DynamicResource Fg.Secondary}" />
+            <Button x:Name="CloseButton" Classes="btn primary" HorizontalAlignment="Right" Content="{l:T 'Close'}" />
+        </StackPanel>
+    </StackPanel>
+</Window>

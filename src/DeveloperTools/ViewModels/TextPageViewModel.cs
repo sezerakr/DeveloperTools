@@ -7,6 +7,8 @@ using CommunityToolkit.Mvvm.Input;
 using DeveloperTools.Services;
 using DeveloperTools.Tools;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.ViewModels;
 
 public partial class TextPageViewModel : PageViewModel
@@ -35,8 +37,8 @@ public partial class TextPageViewModel : PageViewModel
         UpdateStats();
     }
 
-    public override string Title => "Text";
-    public override string Subtitle => "Change case, sort and clean lines, count words";
+    public override string Title => Loc.T("Text");
+    public override string Subtitle => Loc.T("Change case, sort and clean lines, count words");
 
     public TextDocument Document { get; } = new();
     public SnippetsViewModel Snippets { get; }
@@ -56,8 +58,8 @@ public partial class TextPageViewModel : PageViewModel
         var s = TextTools.Stats(Document.Text);
         var minutes = s.ReadingTime.TotalMinutes;
         var reading = s.Words == 0 ? "0 min" : minutes < 1 ? "< 1 min" : $"{Math.Round(minutes):0} min";
-        Stats = $"{s.Characters:N0} characters  ·  {s.CharactersNoSpaces:N0} without spaces  ·  {s.Words:N0} words  ·  " +
-                $"{s.Lines:N0} lines  ·  {s.Sentences:N0} sentences  ·  {s.Paragraphs:N0} paragraphs  ·  {s.Bytes:N0} bytes  ·  {reading} read";
+        Stats = Loc.F("{0:N0} characters  ·  {1:N0} without spaces  ·  {2:N0} words  ·  {3:N0} lines  ·  {4:N0} sentences  ·  {5:N0} paragraphs  ·  {6:N0} bytes  ·  {7} read",
+            s.Characters, s.CharactersNoSpaces, s.Words, s.Lines, s.Sentences, s.Paragraphs, s.Bytes, reading);
     }
 
     public void UpdateSelection(string selected)
@@ -68,7 +70,7 @@ public partial class TextPageViewModel : PageViewModel
             return;
         }
         var s = TextTools.Stats(selected);
-        SelectionStats = $"Selection: {s.Characters:N0} chars, {s.Words:N0} words, {s.Lines:N0} lines";
+        SelectionStats = Loc.F("Selection: {0:N0} chars, {1:N0} words, {2:N0} lines", s.Characters, s.Words, s.Lines);
     }
 
     // ------------------------------------------------------------------ transforms

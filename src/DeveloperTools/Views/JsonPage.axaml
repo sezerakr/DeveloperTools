@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:DeveloperTools.Localization"
              xmlns:vm="using:DeveloperTools.ViewModels"
              xmlns:ae="using:AvaloniaEdit"
              xmlns:c="using:DeveloperTools.Converters"
@@ -24,33 +25,33 @@
                 BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="*,Auto">
                 <WrapPanel Grid.Column="0" VerticalAlignment="Center">
-                    <Button Classes="btn primary" Margin="0,2,6,2" Command="{Binding FormatCommand}" ToolTip.Tip="Format (Ctrl+Shift+F)">
+                    <Button Classes="btn primary" Margin="0,2,6,2" Command="{Binding FormatCommand}" ToolTip.Tip="{l:T 'Format (Ctrl+Shift+F)'}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <PathIcon Data="{StaticResource Icon.Json}" />
-                            <TextBlock Text="Format" VerticalAlignment="Center" />
+                            <TextBlock Text="{l:T 'Format'}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Classes="btn" Margin="0,2,6,2" Content="Minify" Command="{Binding MinifyCommand}" ToolTip.Tip="Minify (Ctrl+Shift+M)" />
+                    <Button Classes="btn" Margin="0,2,6,2" Content="{l:T 'Minify'}" Command="{Binding MinifyCommand}" ToolTip.Tip="{l:T 'Minify (Ctrl+Shift+M)'}" />
                     <Button Classes="btn" Margin="0,2,6,2" Command="{Binding RepairCommand}"
-                            ToolTip.Tip="Fix trailing commas, comments, single quotes, unquoted keys, missing commas and brackets (Ctrl+Shift+R)">
+                            ToolTip.Tip="{l:T 'Fix trailing commas, comments, single quotes, unquoted keys, missing commas and brackets (Ctrl+Shift+R)'}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <PathIcon Data="{StaticResource Icon.Wrench}" />
-                            <TextBlock Text="Repair" VerticalAlignment="Center" />
+                            <TextBlock Text="{l:T 'Repair'}" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Classes="btn" Margin="0,2,6,2" Content="Sort keys" Command="{Binding SortKeysCommand}"
-                            ToolTip.Tip="Sort object keys alphabetically at every level" />
+                    <Button Classes="btn" Margin="0,2,6,2" Content="{l:T 'Sort keys'}" Command="{Binding SortKeysCommand}"
+                            ToolTip.Tip="{l:T 'Sort object keys alphabetically at every level'}" />
                     <Border Classes="tool-sep" Margin="4,0,10,0" />
                     <ComboBox Margin="0,2,6,2" Width="112" Height="32" MinHeight="32" FontSize="13"
                               ItemsSource="{Binding IndentOptions}" SelectedItem="{Binding SelectedIndent}"
-                              ToolTip.Tip="Indentation for Format" />
+                              ToolTip.Tip="{l:T 'Indentation for Format'}" />
                     <Border Classes="tool-sep" Margin="4,0,10,0" />
-                    <Button Classes="btn ghost" Margin="0,2,2,2" Content="Escape" Command="{Binding EscapeStringCommand}"
-                            ToolTip.Tip="Turn the text into a JSON string literal" />
-                    <Button Classes="btn ghost" Margin="0,2,2,2" Content="Unescape" Command="{Binding UnescapeStringCommand}"
-                            ToolTip.Tip="Turn a JSON string literal back into JSON or text" />
-                    <Button Classes="btn ghost" Margin="0,2,2,2" Content="From YAML" Command="{Binding FromYamlCommand}"
-                            ToolTip.Tip="The editor contains YAML: convert it to JSON" />
+                    <Button Classes="btn ghost" Margin="0,2,2,2" Content="{l:T 'Escape'}" Command="{Binding EscapeStringCommand}"
+                            ToolTip.Tip="{l:T 'Turn the text into a JSON string literal'}" />
+                    <Button Classes="btn ghost" Margin="0,2,2,2" Content="{l:T 'Unescape'}" Command="{Binding UnescapeStringCommand}"
+                            ToolTip.Tip="{l:T 'Turn a JSON string literal back into JSON or text'}" />
+                    <Button Classes="btn ghost" Margin="0,2,2,2" Content="{l:T 'From YAML'}" Command="{Binding FromYamlCommand}"
+                            ToolTip.Tip="{l:T 'The editor contains YAML: convert it to JSON'}" />
                 </WrapPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Top" Margin="8,2,0,2">
@@ -61,20 +62,20 @@
                         <Ellipse Classes="dirty" IsVisible="{Binding IsDirty}" VerticalAlignment="Center" />
                     </StackPanel>
                     <ToggleButton Classes="btn ghost icon" IsChecked="{Binding Panel.IsOpen}"
-                                  ToolTip.Tip="Tools panel: tree, JSONPath query, code and YAML">
+                                  ToolTip.Tip="{l:T 'Tools panel: tree, JSONPath query, code and YAML'}">
                         <PathIcon Data="{StaticResource Icon.Tree}" />
                     </ToggleButton>
                     <views:SnippetsButton DataContext="{Binding Snippets}" />
-                    <Button Classes="btn ghost icon" Command="{Binding OpenCommand}" ToolTip.Tip="Open file (Ctrl+O)">
+                    <Button Classes="btn ghost icon" Command="{Binding OpenCommand}" ToolTip.Tip="{l:T 'Open file (Ctrl+O)'}">
                         <PathIcon Data="{StaticResource Icon.FolderOpen}" />
                     </Button>
-                    <Button Classes="btn ghost icon" Command="{Binding SaveCommand}" ToolTip.Tip="Save (Ctrl+S)">
+                    <Button Classes="btn ghost icon" Command="{Binding SaveCommand}" ToolTip.Tip="{l:T 'Save (Ctrl+S)'}">
                         <PathIcon Data="{StaticResource Icon.Save}" />
                     </Button>
-                    <Button Classes="btn ghost icon" Command="{Binding CopyAllCommand}" ToolTip.Tip="Copy all">
+                    <Button Classes="btn ghost icon" Command="{Binding CopyAllCommand}" ToolTip.Tip="{l:T 'Copy all'}">
                         <PathIcon Data="{StaticResource Icon.Copy}" />
                     </Button>
-                    <Button Classes="btn ghost icon" Command="{Binding ClearCommand}" ToolTip.Tip="Clear">
+                    <Button Classes="btn ghost icon" Command="{Binding ClearCommand}" ToolTip.Tip="{l:T 'Clear'}">
                         <PathIcon Data="{StaticResource Icon.Eraser}" />
                     </Button>
                 </StackPanel>
@@ -93,7 +94,7 @@
                 <SelectableTextBlock Grid.Column="1" Text="{Binding Notice}" FontSize="12.5" TextWrapping="Wrap"
                                      Foreground="{DynamicResource Fg.Primary}" VerticalAlignment="Center" />
                 <Button Grid.Column="2" Classes="btn ghost icon" Width="22" Height="22" Margin="10,-2,-4,-2"
-                        Command="{Binding DismissNoticeCommand}" ToolTip.Tip="Dismiss" VerticalAlignment="Top">
+                        Command="{Binding DismissNoticeCommand}" ToolTip.Tip="{l:T 'Dismiss'}" VerticalAlignment="Top">
                     <PathIcon Data="{StaticResource Icon.Close}" Width="12" Height="12" />
                 </Button>
             </Grid>
@@ -114,8 +115,8 @@
                 <TextBlock Grid.Column="1" Text="{Binding StatusText}" FontSize="12" VerticalAlignment="Center"
                            Classes="secondary" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding StatusText}" />
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" Margin="10,0,0,0" IsVisible="{Binding IsInvalid}">
-                    <Button Classes="btn xs" Content="Go to error" Command="{Binding GoToErrorCommand}" ToolTip.Tip="F8" />
-                    <Button Classes="btn xs" Content="Repair" Command="{Binding RepairCommand}" />
+                    <Button Classes="btn xs" Content="{l:T 'Go to error'}" Command="{Binding GoToErrorCommand}" ToolTip.Tip="{l:T 'F8'}" />
+                    <Button Classes="btn xs" Content="{l:T 'Repair'}" Command="{Binding RepairCommand}" />
                 </StackPanel>
                 <TextBlock x:Name="CaretText" Grid.Column="3" FontSize="11.5" Classes="muted" Margin="16,0,4,0"
                            VerticalAlignment="Center" />
@@ -143,9 +144,9 @@
                         BorderBrush="{DynamicResource Line}" BorderThickness="1" HorizontalAlignment="Center">
                     <PathIcon Width="20" Height="20" Data="{StaticResource Icon.Json}" Foreground="{DynamicResource Fg.Muted}" />
                 </Border>
-                <TextBlock Text="Paste JSON to start" Classes="h3" HorizontalAlignment="Center" Margin="0,6,0,0" />
+                <TextBlock Text="{l:T 'Paste JSON to start'}" Classes="h3" HorizontalAlignment="Center" Margin="0,6,0,0" />
                 <TextBlock Classes="secondary" FontSize="13" TextAlignment="Center" TextWrapping="Wrap"
-                           Text="It is checked as you type. Repair fixes comments, trailing commas, single quotes, unquoted keys and missing brackets." />
+                           Text="{l:T 'It is checked as you type. Repair fixes comments, trailing commas, single quotes, unquoted keys and missing brackets.'}" />
             </StackPanel>
         </Panel>
 
@@ -159,20 +160,20 @@
                     BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Orientation="Horizontal">
-                        <RadioButton Classes="tab" Height="38" Margin="0,0,16,0" FontSize="13" GroupName="json-panel" Content="Tree"
+                        <RadioButton Classes="tab" Height="38" Margin="0,0,16,0" FontSize="13" GroupName="json-panel" Content="{l:T 'Tree'}"
                                      IsChecked="{Binding Tab, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Tree}" />
-                        <RadioButton Classes="tab" Height="38" Margin="0,0,16,0" FontSize="13" GroupName="json-panel" Content="Query"
+                        <RadioButton Classes="tab" Height="38" Margin="0,0,16,0" FontSize="13" GroupName="json-panel" Content="{l:T 'Query'}"
                                      IsChecked="{Binding Tab, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Query}" />
-                        <RadioButton Classes="tab" Height="38" Margin="0,0,16,0" FontSize="13" GroupName="json-panel" Content="Code"
+                        <RadioButton Classes="tab" Height="38" Margin="0,0,16,0" FontSize="13" GroupName="json-panel" Content="{l:T 'Code'}"
                                      IsChecked="{Binding Tab, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Code}" />
-                        <RadioButton Classes="tab" Height="38" Margin="0,0,16,0" FontSize="13" GroupName="json-panel" Content="YAML"
+                        <RadioButton Classes="tab" Height="38" Margin="0,0,16,0" FontSize="13" GroupName="json-panel" Content="{l:T 'YAML'}"
                                      IsChecked="{Binding Tab, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Yaml}" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Classes="btn ghost icon" Command="{Binding CopyOutputCommand}" ToolTip.Tip="Copy">
+                        <Button Classes="btn ghost icon" Command="{Binding CopyOutputCommand}" ToolTip.Tip="{l:T 'Copy'}">
                             <PathIcon Data="{StaticResource Icon.Copy}" />
                         </Button>
-                        <Button Classes="btn ghost icon" Click="OnClosePanel" ToolTip.Tip="Close panel">
+                        <Button Classes="btn ghost icon" Click="OnClosePanel" ToolTip.Tip="{l:T 'Close panel'}">
                             <PathIcon Data="{StaticResource Icon.Close}" />
                         </Button>
                     </StackPanel>
@@ -191,8 +192,8 @@
                         <Grid ColumnDefinitions="*,Auto,Auto">
                             <SelectableTextBlock Text="{Binding SelectedPath}" FontFamily="{StaticResource Font.Mono}" FontSize="12"
                                                  Foreground="{DynamicResource Fg.Primary}" TextWrapping="Wrap" VerticalAlignment="Center" />
-                            <Button Grid.Column="1" Classes="btn ghost xs" Content="Copy path" Command="{Binding CopyPathCommand}" Margin="8,0,0,0" />
-                            <Button Grid.Column="2" Classes="btn ghost xs" Content="Query" Command="{Binding UsePathInQueryCommand}" />
+                            <Button Grid.Column="1" Classes="btn ghost xs" Content="{l:T 'Copy path'}" Command="{Binding CopyPathCommand}" Margin="8,0,0,0" />
+                            <Button Grid.Column="2" Classes="btn ghost xs" Content="{l:T 'Query'}" Command="{Binding UsePathInQueryCommand}" />
                         </Grid>
                     </Border>
                     <TreeView x:Name="Tree" ItemsSource="{Binding TreeRoots}" SelectedItem="{Binding SelectedNode}" Margin="4,6">
@@ -220,11 +221,11 @@
                 <DockPanel IsVisible="{Binding Tab, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Query}">
                     <StackPanel DockPanel.Dock="Top" Margin="12,10" Spacing="6">
                         <TextBox Text="{Binding Query}" FontFamily="{StaticResource Font.Mono}" FontSize="13"
-                                 PlaceholderText="$.items[*].name   $..price   $.users[?(@.age &gt; 30)]" />
+                                 PlaceholderText="{l:T '$.items[*].name   $..price   $.users[?(@.age &gt; 30)]'}" />
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="{Binding QueryInfo}" FontSize="12" Classes="secondary" TextWrapping="Wrap" VerticalAlignment="Center" />
-                            <CheckBox Grid.Column="1" Content="Paths" IsChecked="{Binding ShowPaths}" FontSize="12.5"
-                                      ToolTip.Tip="Show the path of each match instead of its value" />
+                            <CheckBox Grid.Column="1" Content="{l:T 'Paths'}" IsChecked="{Binding ShowPaths}" FontSize="12.5"
+                                      ToolTip.Tip="{l:T 'Show the path of each match instead of its value'}" />
                         </Grid>
                     </StackPanel>
                     <ae:TextEditor x:Name="QueryView" IsReadOnly="True" FontFamily="{StaticResource Font.Mono}" FontSize="13"
@@ -238,16 +239,16 @@
                     <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*" ColumnSpacing="10" Margin="12,10">
                         <Border Classes="segmented">
                             <StackPanel Orientation="Horizontal">
-                                <RadioButton Classes="segment" GroupName="codegen" Content="C#"
+                                <RadioButton Classes="segment" GroupName="codegen" Content="{l:T 'C#'}"
                                              IsChecked="{Binding CodeTarget, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=CSharp}" />
-                                <RadioButton Classes="segment" GroupName="codegen" Content="Kotlin"
+                                <RadioButton Classes="segment" GroupName="codegen" Content="{l:T 'Kotlin'}"
                                              IsChecked="{Binding CodeTarget, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Kotlin}" />
-                                <RadioButton Classes="segment" GroupName="codegen" Content="TypeScript"
+                                <RadioButton Classes="segment" GroupName="codegen" Content="{l:T 'TypeScript'}"
                                              IsChecked="{Binding CodeTarget, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=TypeScript}" />
                             </StackPanel>
                         </Border>
                         <TextBox Grid.Column="1" Text="{Binding RootName}" FontFamily="{StaticResource Font.Mono}" FontSize="13"
-                                 PlaceholderText="Root type name" ToolTip.Tip="Name of the top-level type" />
+                                 PlaceholderText="{l:T 'Root type name'}" ToolTip.Tip="{l:T 'Name of the top-level type'}" />
                     </Grid>
                     <ae:TextEditor x:Name="CodeView" IsReadOnly="True" FontFamily="{StaticResource Font.Mono}" FontSize="13"
                                    ShowLineNumbers="False" Padding="12,6" HorizontalScrollBarVisibility="Auto"

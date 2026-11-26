@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:DeveloperTools.Localization"
              xmlns:vm="using:DeveloperTools.ViewModels"
              xmlns:c="using:DeveloperTools.Converters"
              x:Class="DeveloperTools.Views.GeneratorsPage"
@@ -30,17 +31,17 @@
         <Border DockPanel.Dock="Top" Padding="28,0" Background="{DynamicResource Bg.Surface}"
                 BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
             <WrapPanel>
-                <RadioButton Classes="tab" GroupName="gen-tab" Content="Password"
+                <RadioButton Classes="tab" GroupName="gen-tab" Content="{l:T 'Password'}"
                              IsChecked="{Binding Tab, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Password}" />
-                <RadioButton Classes="tab" GroupName="gen-tab" Content="Secret key"
+                <RadioButton Classes="tab" GroupName="gen-tab" Content="{l:T 'Secret key'}"
                              IsChecked="{Binding Tab, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Secret}" />
-                <RadioButton Classes="tab" GroupName="gen-tab" Content="UUID"
+                <RadioButton Classes="tab" GroupName="gen-tab" Content="{l:T 'UUID'}"
                              IsChecked="{Binding Tab, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Uuid}" />
-                <RadioButton Classes="tab" GroupName="gen-tab" Content="Lorem ipsum"
+                <RadioButton Classes="tab" GroupName="gen-tab" Content="{l:T 'Lorem ipsum'}"
                              IsChecked="{Binding Tab, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Lorem}" />
-                <RadioButton Classes="tab" GroupName="gen-tab" Content="Fake data"
+                <RadioButton Classes="tab" GroupName="gen-tab" Content="{l:T 'Fake data'}"
                              IsChecked="{Binding Tab, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Fake}" />
-                <RadioButton Classes="tab" GroupName="gen-tab" Content="QR code"
+                <RadioButton Classes="tab" GroupName="gen-tab" Content="{l:T 'QR code'}"
                              IsChecked="{Binding Tab, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Qr}" />
             </WrapPanel>
         </Border>
@@ -55,7 +56,7 @@
                         <StackPanel Spacing="20">
                             <StackPanel>
                                 <Grid ColumnDefinitions="*,Auto">
-                                    <TextBlock Classes="field" Text="Length" />
+                                    <TextBlock Classes="field" Text="{l:T 'Length'}" />
                                     <TextBlock Grid.Column="1" Text="{Binding PasswordLength}" FontFamily="{StaticResource Font.Mono}"
                                                FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource Fg.Primary}" />
                                 </Grid>
@@ -64,16 +65,16 @@
                             </StackPanel>
 
                             <StackPanel Spacing="2">
-                                <TextBlock Classes="field" Text="Characters" />
-                                <CheckBox IsChecked="{Binding UseUpper}" Content="Uppercase  A–Z" />
-                                <CheckBox IsChecked="{Binding UseLower}" Content="Lowercase  a–z" />
-                                <CheckBox IsChecked="{Binding UseDigits}" Content="Digits  0–9" />
-                                <CheckBox IsChecked="{Binding UseSymbols}" Content="Symbols  ! @ # $ % …" />
-                                <CheckBox IsChecked="{Binding ExcludeAmbiguous}" Content="Avoid look-alikes  I l 1 O 0 o" Margin="0,6,0,0" />
+                                <TextBlock Classes="field" Text="{l:T 'Characters'}" />
+                                <CheckBox IsChecked="{Binding UseUpper}" Content="{l:T 'Uppercase  A–Z'}" />
+                                <CheckBox IsChecked="{Binding UseLower}" Content="{l:T 'Lowercase  a–z'}" />
+                                <CheckBox IsChecked="{Binding UseDigits}" Content="{l:T 'Digits  0–9'}" />
+                                <CheckBox IsChecked="{Binding UseSymbols}" Content="{l:T 'Symbols  ! @ # $ % …'}" />
+                                <CheckBox IsChecked="{Binding ExcludeAmbiguous}" Content="{l:T 'Avoid look-alikes  I l 1 O 0 o'}" Margin="0,6,0,0" />
                             </StackPanel>
 
                             <StackPanel>
-                                <TextBlock Classes="field" Text="How many" />
+                                <TextBlock Classes="field" Text="{l:T 'How many'}" />
                                 <NumericUpDown Value="{Binding PasswordCount}" Minimum="1" Maximum="100" Increment="1" FormatString="0" />
                             </StackPanel>
 
@@ -91,7 +92,7 @@
                             <Button Classes="btn primary" HorizontalAlignment="Stretch" Command="{Binding GeneratePasswordsCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <PathIcon Data="{StaticResource Icon.Refresh}" />
-                                    <TextBlock Text="Generate new" VerticalAlignment="Center" />
+                                    <TextBlock Text="{l:T 'Generate new'}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -100,11 +101,11 @@
                     <Border Classes="card" VerticalAlignment="Top">
                         <StackPanel>
                             <Grid ColumnDefinitions="*,Auto" Margin="16,10,10,10">
-                                <TextBlock Classes="h3" Text="Passwords" VerticalAlignment="Center" />
+                                <TextBlock Classes="h3" Text="{l:T 'Passwords'}" VerticalAlignment="Center" />
                                 <Button Grid.Column="1" Classes="btn ghost" Command="{Binding CopyAllPasswordsCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <PathIcon Data="{StaticResource Icon.Copy}" />
-                                        <TextBlock Text="Copy all" VerticalAlignment="Center" />
+                                        <TextBlock Text="{l:T 'Copy all'}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
                             </Grid>
@@ -122,28 +123,28 @@
                     <Border Classes="card" Padding="20" VerticalAlignment="Top">
                         <StackPanel Spacing="20">
                             <StackPanel>
-                                <TextBlock Classes="field" Text="Presets" />
+                                <TextBlock Classes="field" Text="{l:T 'Presets'}" />
                                 <WrapPanel>
-                                    <Button Classes="btn xs" Margin="0,0,6,6" Content="API key" Command="{Binding ApplyPresetCommand}" CommandParameter="api"
-                                            ToolTip.Tip="32 letters and digits" />
-                                    <Button Classes="btn xs" Margin="0,0,6,6" Content="JWT secret" Command="{Binding ApplyPresetCommand}" CommandParameter="jwt"
-                                            ToolTip.Tip="64 random bytes as Base64 (HS256/HS512)" />
-                                    <Button Classes="btn xs" Margin="0,0,6,6" Content="AES-256" Command="{Binding ApplyPresetCommand}" CommandParameter="aes256"
-                                            ToolTip.Tip="32 random bytes as hex" />
-                                    <Button Classes="btn xs" Margin="0,0,6,6" Content="AES-128" Command="{Binding ApplyPresetCommand}" CommandParameter="aes128"
-                                            ToolTip.Tip="16 random bytes as hex" />
-                                    <Button Classes="btn xs" Margin="0,0,6,6" Content="URL token" Command="{Binding ApplyPresetCommand}" CommandParameter="token"
-                                            ToolTip.Tip="32 random bytes, Base64 URL-safe" />
+                                    <Button Classes="btn xs" Margin="0,0,6,6" Content="{l:T 'API key'}" Command="{Binding ApplyPresetCommand}" CommandParameter="api"
+                                            ToolTip.Tip="{l:T '32 letters and digits'}" />
+                                    <Button Classes="btn xs" Margin="0,0,6,6" Content="{l:T 'JWT secret'}" Command="{Binding ApplyPresetCommand}" CommandParameter="jwt"
+                                            ToolTip.Tip="{l:T '64 random bytes as Base64 (HS256/HS512)'}" />
+                                    <Button Classes="btn xs" Margin="0,0,6,6" Content="{l:T 'AES-256'}" Command="{Binding ApplyPresetCommand}" CommandParameter="aes256"
+                                            ToolTip.Tip="{l:T '32 random bytes as hex'}" />
+                                    <Button Classes="btn xs" Margin="0,0,6,6" Content="{l:T 'AES-128'}" Command="{Binding ApplyPresetCommand}" CommandParameter="aes128"
+                                            ToolTip.Tip="{l:T '16 random bytes as hex'}" />
+                                    <Button Classes="btn xs" Margin="0,0,6,6" Content="{l:T 'URL token'}" Command="{Binding ApplyPresetCommand}" CommandParameter="token"
+                                            ToolTip.Tip="{l:T '32 random bytes, Base64 URL-safe'}" />
                                 </WrapPanel>
                             </StackPanel>
 
                             <StackPanel>
-                                <TextBlock Classes="field" Text="Format" />
+                                <TextBlock Classes="field" Text="{l:T 'Format'}" />
                                 <ComboBox ItemsSource="{Binding KeyFormats}" SelectedItem="{Binding KeyFormat}" HorizontalAlignment="Stretch" />
                             </StackPanel>
 
                             <StackPanel IsVisible="{Binding IsCustomFormat}">
-                                <TextBlock Classes="field" Text="Characters to use" />
+                                <TextBlock Classes="field" Text="{l:T 'Characters to use'}" />
                                 <TextBox Text="{Binding CustomChars}" FontFamily="{StaticResource Font.Mono}" />
                             </StackPanel>
 
@@ -153,12 +154,12 @@
                             </StackPanel>
 
                             <StackPanel>
-                                <TextBlock Classes="field" Text="Prefix (optional)" />
-                                <TextBox Text="{Binding Prefix}" PlaceholderText="e.g. sk_live_" FontFamily="{StaticResource Font.Mono}" />
+                                <TextBlock Classes="field" Text="{l:T 'Prefix (optional)'}" />
+                                <TextBox Text="{Binding Prefix}" PlaceholderText="{l:T 'e.g. sk_live_'}" FontFamily="{StaticResource Font.Mono}" />
                             </StackPanel>
 
                             <StackPanel>
-                                <TextBlock Classes="field" Text="How many" />
+                                <TextBlock Classes="field" Text="{l:T 'How many'}" />
                                 <NumericUpDown Value="{Binding KeyCount}" Minimum="1" Maximum="100" Increment="1" FormatString="0" />
                             </StackPanel>
 
@@ -167,7 +168,7 @@
                             <Button Classes="btn primary" HorizontalAlignment="Stretch" Command="{Binding GenerateSecretsCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <PathIcon Data="{StaticResource Icon.Refresh}" />
-                                    <TextBlock Text="Generate new" VerticalAlignment="Center" />
+                                    <TextBlock Text="{l:T 'Generate new'}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -176,11 +177,11 @@
                     <Border Classes="card" VerticalAlignment="Top">
                         <StackPanel>
                             <Grid ColumnDefinitions="*,Auto" Margin="16,10,10,10">
-                                <TextBlock Classes="h3" Text="Secret keys" VerticalAlignment="Center" />
+                                <TextBlock Classes="h3" Text="{l:T 'Secret keys'}" VerticalAlignment="Center" />
                                 <Button Grid.Column="1" Classes="btn ghost" Command="{Binding CopyAllSecretsCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <PathIcon Data="{StaticResource Icon.Copy}" />
-                                        <TextBlock Text="Copy all" VerticalAlignment="Center" />
+                                        <TextBlock Text="{l:T 'Copy all'}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
                             </Grid>
@@ -198,33 +199,33 @@
                     <Border Classes="card" Padding="20" VerticalAlignment="Top">
                         <StackPanel Spacing="20">
                             <StackPanel>
-                                <TextBlock Classes="field" Text="Version" />
+                                <TextBlock Classes="field" Text="{l:T 'Version'}" />
                                 <Border Classes="segmented" HorizontalAlignment="Left">
                                     <StackPanel Orientation="Horizontal">
-                                        <RadioButton Classes="segment" GroupName="uuid-version" Content="v4 · random" IsChecked="{Binding UuidVersion4}" />
-                                        <RadioButton Classes="segment" GroupName="uuid-version" Content="v7 · time-ordered" IsChecked="{Binding UuidVersion7}" />
+                                        <RadioButton Classes="segment" GroupName="uuid-version" Content="{l:T 'v4 · random'}" IsChecked="{Binding UuidVersion4}" />
+                                        <RadioButton Classes="segment" GroupName="uuid-version" Content="{l:T 'v7 · time-ordered'}" IsChecked="{Binding UuidVersion7}" />
                                     </StackPanel>
                                 </Border>
                                 <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap" Margin="0,8,0,0"
-                                           Text="v7 starts with a timestamp, so new IDs sort after older ones. Good for database keys." />
+                                           Text="{l:T 'v7 starts with a timestamp, so new IDs sort after older ones. Good for database keys.'}" />
                             </StackPanel>
 
                             <StackPanel Spacing="2">
-                                <TextBlock Classes="field" Text="Format" />
-                                <CheckBox IsChecked="{Binding UuidHyphens}" Content="Hyphens" />
-                                <CheckBox IsChecked="{Binding UuidUppercase}" Content="Uppercase" />
+                                <TextBlock Classes="field" Text="{l:T 'Format'}" />
+                                <CheckBox IsChecked="{Binding UuidHyphens}" Content="{l:T 'Hyphens'}" />
+                                <CheckBox IsChecked="{Binding UuidUppercase}" Content="{l:T 'Uppercase'}" />
                                 <CheckBox IsChecked="{Binding UuidBraces}" Content="Braces  { }" />
                             </StackPanel>
 
                             <StackPanel>
-                                <TextBlock Classes="field" Text="How many" />
+                                <TextBlock Classes="field" Text="{l:T 'How many'}" />
                                 <NumericUpDown Value="{Binding UuidCount}" Minimum="1" Maximum="500" Increment="1" FormatString="0" />
                             </StackPanel>
 
                             <Button Classes="btn primary" HorizontalAlignment="Stretch" Command="{Binding GenerateUuidsCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <PathIcon Data="{StaticResource Icon.Refresh}" />
-                                    <TextBlock Text="Generate new" VerticalAlignment="Center" />
+                                    <TextBlock Text="{l:T 'Generate new'}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -233,11 +234,11 @@
                     <Border Classes="card" VerticalAlignment="Top">
                         <StackPanel>
                             <Grid ColumnDefinitions="*,Auto" Margin="16,10,10,10">
-                                <TextBlock Classes="h3" Text="UUIDs" VerticalAlignment="Center" />
+                                <TextBlock Classes="h3" Text="{l:T 'UUIDs'}" VerticalAlignment="Center" />
                                 <Button Grid.Column="1" Classes="btn ghost" Command="{Binding CopyAllUuidsCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <PathIcon Data="{StaticResource Icon.Copy}" />
-                                        <TextBlock Text="Copy all" VerticalAlignment="Center" />
+                                        <TextBlock Text="{l:T 'Copy all'}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
                             </Grid>
@@ -252,27 +253,27 @@
                     <Border Classes="card" Padding="20" VerticalAlignment="Top">
                         <StackPanel Spacing="20">
                             <StackPanel>
-                                <TextBlock Classes="field" Text="Generate" />
+                                <TextBlock Classes="field" Text="{l:T 'Generate'}" />
                                 <Border Classes="segmented" HorizontalAlignment="Left">
                                     <StackPanel Orientation="Horizontal">
-                                        <RadioButton Classes="segment" GroupName="lorem" Content="Paragraphs"
+                                        <RadioButton Classes="segment" GroupName="lorem" Content="{l:T 'Paragraphs'}"
                                                      IsChecked="{Binding LoremUnit, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Paragraphs}" />
-                                        <RadioButton Classes="segment" GroupName="lorem" Content="Sentences"
+                                        <RadioButton Classes="segment" GroupName="lorem" Content="{l:T 'Sentences'}"
                                                      IsChecked="{Binding LoremUnit, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Sentences}" />
-                                        <RadioButton Classes="segment" GroupName="lorem" Content="Words"
+                                        <RadioButton Classes="segment" GroupName="lorem" Content="{l:T 'Words'}"
                                                      IsChecked="{Binding LoremUnit, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Words}" />
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
                             <StackPanel>
-                                <TextBlock Classes="field" Text="How many" />
+                                <TextBlock Classes="field" Text="{l:T 'How many'}" />
                                 <NumericUpDown Value="{Binding LoremCount}" Minimum="1" Maximum="1000" Increment="1" FormatString="0" />
                             </StackPanel>
-                            <CheckBox IsChecked="{Binding LoremStart}" Content="Start with &quot;Lorem ipsum dolor sit amet&quot;" />
+                            <CheckBox IsChecked="{Binding LoremStart}" Content="{l:T 'Start with &quot;Lorem ipsum dolor sit amet&quot;'}" />
                             <Button Classes="btn primary" HorizontalAlignment="Stretch" Command="{Binding GenerateLoremCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <PathIcon Data="{StaticResource Icon.Refresh}" />
-                                    <TextBlock Text="Generate new" VerticalAlignment="Center" />
+                                    <TextBlock Text="{l:T 'Generate new'}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -280,11 +281,11 @@
                     <Border Classes="card" VerticalAlignment="Top">
                         <StackPanel>
                             <Grid ColumnDefinitions="*,Auto" Margin="16,10,10,10">
-                                <TextBlock Classes="h3" Text="Text" VerticalAlignment="Center" />
+                                <TextBlock Classes="h3" Text="{l:T 'Text'}" VerticalAlignment="Center" />
                                 <Button Grid.Column="1" Classes="btn ghost" Command="{Binding CopyLoremCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <PathIcon Data="{StaticResource Icon.Copy}" />
-                                        <TextBlock Text="Copy" VerticalAlignment="Center" />
+                                        <TextBlock Text="{l:T 'Copy'}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
                             </Grid>
@@ -300,7 +301,7 @@
                     <Border Classes="card" Padding="20" VerticalAlignment="Top">
                         <StackPanel Spacing="20">
                             <StackPanel Spacing="2">
-                                <TextBlock Classes="field" Text="Fields" />
+                                <TextBlock Classes="field" Text="{l:T 'Fields'}" />
                                 <ItemsControl ItemsSource="{Binding FakeFields}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
@@ -315,19 +316,19 @@
                                 </ItemsControl>
                             </StackPanel>
                             <StackPanel>
-                                <TextBlock Classes="field" Text="Format" />
+                                <TextBlock Classes="field" Text="{l:T 'Format'}" />
                                 <ComboBox ItemsSource="{Binding FakeFormats}" SelectedItem="{Binding FakeFormat}" Width="150" />
                             </StackPanel>
                             <StackPanel>
-                                <TextBlock Classes="field" Text="Rows" />
+                                <TextBlock Classes="field" Text="{l:T 'Rows'}" />
                                 <NumericUpDown Value="{Binding FakeCount}" Minimum="1" Maximum="10000" Increment="1" FormatString="0" />
                             </StackPanel>
                             <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap"
-                                       Text="Clearly fake on purpose: example.com emails, +1 555-01xx phone numbers and documentation-only IP addresses. Safe to use in tests and demos." />
+                                       Text="{l:T 'Clearly fake on purpose: example.com emails, +1 555-01xx phone numbers and documentation-only IP addresses. Safe to use in tests and demos.'}" />
                             <Button Classes="btn primary" HorizontalAlignment="Stretch" Command="{Binding GenerateFakeCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <PathIcon Data="{StaticResource Icon.Refresh}" />
-                                    <TextBlock Text="Generate new" VerticalAlignment="Center" />
+                                    <TextBlock Text="{l:T 'Generate new'}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -335,11 +336,11 @@
                     <Border Classes="card" VerticalAlignment="Top">
                         <StackPanel>
                             <Grid ColumnDefinitions="*,Auto" Margin="16,10,10,10">
-                                <TextBlock Classes="h3" Text="Test data" VerticalAlignment="Center" />
+                                <TextBlock Classes="h3" Text="{l:T 'Test data'}" VerticalAlignment="Center" />
                                 <Button Grid.Column="1" Classes="btn ghost" Command="{Binding CopyFakeCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <PathIcon Data="{StaticResource Icon.Copy}" />
-                                        <TextBlock Text="Copy" VerticalAlignment="Center" />
+                                        <TextBlock Text="{l:T 'Copy'}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
                             </Grid>
@@ -358,41 +359,41 @@
                         <StackPanel Spacing="18">
                             <Border Classes="segmented" HorizontalAlignment="Left">
                                 <StackPanel Orientation="Horizontal">
-                                    <RadioButton Classes="segment" GroupName="qrmode" Content="Text or link"
+                                    <RadioButton Classes="segment" GroupName="qrmode" Content="{l:T 'Text or link'}"
                                                  IsChecked="{Binding QrMode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Text}" />
-                                    <RadioButton Classes="segment" GroupName="qrmode" Content="Wi-Fi"
+                                    <RadioButton Classes="segment" GroupName="qrmode" Content="{l:T 'Wi-Fi'}"
                                                  IsChecked="{Binding QrMode, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Wifi}" />
                                 </StackPanel>
                             </Border>
                             <StackPanel IsVisible="{Binding IsQrText}">
-                                <TextBlock Classes="field" Text="Content" />
+                                <TextBlock Classes="field" Text="{l:T 'Content'}" />
                                 <TextBox Text="{Binding QrText}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" FontSize="13" />
                             </StackPanel>
                             <StackPanel IsVisible="{Binding IsQrWifi}" Spacing="12">
                                 <StackPanel>
-                                    <TextBlock Classes="field" Text="Network name (SSID)" />
+                                    <TextBlock Classes="field" Text="{l:T 'Network name (SSID)'}" />
                                     <TextBox Text="{Binding WifiSsid}" FontSize="13" />
                                 </StackPanel>
                                 <StackPanel>
-                                    <TextBlock Classes="field" Text="Password" />
+                                    <TextBlock Classes="field" Text="{l:T 'Password'}" />
                                     <TextBox Text="{Binding WifiPassword}" PasswordChar="•" FontSize="13" />
                                 </StackPanel>
                                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                                     <StackPanel>
-                                        <TextBlock Classes="field" Text="Security" />
+                                        <TextBlock Classes="field" Text="{l:T 'Security'}" />
                                         <ComboBox ItemsSource="{Binding WifiSecurities}" SelectedItem="{Binding WifiSecurity}" HorizontalAlignment="Stretch" />
                                     </StackPanel>
-                                    <CheckBox Grid.Column="1" Content="Hidden network" IsChecked="{Binding WifiHidden}" VerticalAlignment="Bottom" />
+                                    <CheckBox Grid.Column="1" Content="{l:T 'Hidden network'}" IsChecked="{Binding WifiHidden}" VerticalAlignment="Bottom" />
                                 </Grid>
                             </StackPanel>
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
                                 <StackPanel>
-                                    <TextBlock Classes="field" Text="Error correction" />
+                                    <TextBlock Classes="field" Text="{l:T 'Error correction'}" />
                                     <ComboBox ItemsSource="{Binding EccLevels}" SelectedItem="{Binding QrEcc}" Width="90"
-                                              ToolTip.Tip="Higher levels survive damage but make a denser code" />
+                                              ToolTip.Tip="{l:T 'Higher levels survive damage but make a denser code'}" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1">
-                                    <TextBlock Classes="field" Text="Size" />
+                                    <TextBlock Classes="field" Text="{l:T 'Size'}" />
                                     <Slider Minimum="4" Maximum="16" Value="{Binding QrScale}" IsSnapToTickEnabled="True" TickFrequency="1"
                                             Margin="0,-6,0,-8" />
                                 </StackPanel>
@@ -402,17 +403,17 @@
                     <Border Classes="card" VerticalAlignment="Top">
                         <StackPanel>
                             <Grid ColumnDefinitions="*,Auto,Auto" Margin="16,10,10,10">
-                                <TextBlock Classes="h3" Text="QR code" VerticalAlignment="Center" />
+                                <TextBlock Classes="h3" Text="{l:T 'QR code'}" VerticalAlignment="Center" />
                                 <Button Grid.Column="1" Classes="btn ghost" Command="{Binding CopyQrCommand}" Margin="0,0,4,0">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <PathIcon Data="{StaticResource Icon.Copy}" />
-                                        <TextBlock Text="Copy image" VerticalAlignment="Center" />
+                                        <TextBlock Text="{l:T 'Copy image'}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
                                 <Button Grid.Column="2" Classes="btn" Command="{Binding SaveQrCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <PathIcon Data="{StaticResource Icon.Save}" />
-                                        <TextBlock Text="Save PNG" VerticalAlignment="Center" />
+                                        <TextBlock Text="{l:T 'Save PNG'}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
                             </Grid>
@@ -428,7 +429,7 @@
                     </Border>
                 </Grid>
 
-                <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap"                           Text="Values come from the operating system's cryptographic random generator. Nothing is stored or sent anywhere." />
+                <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap"                           Text="{l:T 'Values come from the operating system’s cryptographic random generator. Nothing is stored or sent anywhere.'}" />
             </StackPanel>
         </ScrollViewer>
     </DockPanel>

@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:DeveloperTools.Localization"
              xmlns:vm="using:DeveloperTools.ViewModels"
              xmlns:c="using:DeveloperTools.Converters"
              xmlns:ae="using:AvaloniaEdit"
@@ -43,70 +44,70 @@
             <WrapPanel VerticalAlignment="Center">
                 <Border Classes="segmented" Margin="0,2,10,2">
                     <StackPanel Orientation="Horizontal">
-                        <RadioButton Classes="segment" GroupName="diffview" Content="Edit"
+                        <RadioButton Classes="segment" GroupName="diffview" Content="{l:T 'Edit'}"
                                      IsChecked="{Binding View, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Edit}" />
-                        <RadioButton Classes="segment" GroupName="diffview" Content="Side by side"
+                        <RadioButton Classes="segment" GroupName="diffview" Content="{l:T 'Side by side'}"
                                      IsChecked="{Binding View, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=SideBySide}" />
-                        <RadioButton Classes="segment" GroupName="diffview" Content="Inline"
+                        <RadioButton Classes="segment" GroupName="diffview" Content="{l:T 'Inline'}"
                                      IsChecked="{Binding View, Converter={x:Static c:EnumEquals.Instance}, ConverterParameter=Inline}" />
                     </StackPanel>
                 </Border>
 
                 <Button Classes="btn primary" Margin="0,2,10,2" Command="{Binding CompareCommand}" IsVisible="{Binding IsEditView}"
-                        ToolTip.Tip="Compare (Ctrl+Enter)">
+                        ToolTip.Tip="{l:T 'Compare (Ctrl+Enter)'}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <PathIcon Data="{StaticResource Icon.Diff}" />
-                        <TextBlock Text="Compare" VerticalAlignment="Center" />
+                        <TextBlock Text="{l:T 'Compare'}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
 
                 <!-- navigation + stats (result views) -->
                 <StackPanel Orientation="Horizontal" Spacing="2" Margin="0,2,10,2" IsVisible="{Binding IsResultView}">
-                    <Button Classes="btn ghost icon" Command="{Binding PreviousChangeCommand}" ToolTip.Tip="Previous change (Shift+F7)">
+                    <Button Classes="btn ghost icon" Command="{Binding PreviousChangeCommand}" ToolTip.Tip="{l:T 'Previous change (Shift+F7)'}">
                         <PathIcon Data="{StaticResource Icon.ChevronUp}" />
                     </Button>
-                    <Button Classes="btn ghost icon" Command="{Binding NextChangeCommand}" ToolTip.Tip="Next change (F7)">
+                    <Button Classes="btn ghost icon" Command="{Binding NextChangeCommand}" ToolTip.Tip="{l:T 'Next change (F7)'}">
                         <PathIcon Data="{StaticResource Icon.ChevronDown}" />
                     </Button>
                     <TextBlock Text="{Binding ChangePosition}" FontSize="12.5" Classes="secondary" VerticalAlignment="Center"
                                Margin="6,0,10,0" MinWidth="64" />
                     <Border Classes="stat" Background="{DynamicResource Diff.AddedBg}" IsVisible="{Binding HasAdded}"
-                            ToolTip.Tip="Added lines">
+                            ToolTip.Tip="{l:T 'Added lines'}">
                         <TextBlock Text="{Binding AddedText}" Foreground="{DynamicResource Diff.Added}" />
                     </Border>
                     <Border Classes="stat" Background="{DynamicResource Diff.RemovedBg}" IsVisible="{Binding HasRemoved}"
-                            ToolTip.Tip="Removed lines">
+                            ToolTip.Tip="{l:T 'Removed lines'}">
                         <TextBlock Text="{Binding RemovedText}" Foreground="{DynamicResource Diff.Removed}" />
                     </Border>
                     <Border Classes="stat" Background="{DynamicResource Bg.Hover}" IsVisible="{Binding HasModified}"
-                            ToolTip.Tip="Changed lines">
+                            ToolTip.Tip="{l:T 'Changed lines'}">
                         <TextBlock Text="{Binding ModifiedText}" Foreground="{DynamicResource Diff.Modified}" />
                     </Border>
                     <Border Classes="pill ok" IsVisible="{Binding IsIdentical}">
                         <StackPanel Orientation="Horizontal" Spacing="5">
                             <PathIcon Data="{StaticResource Icon.CheckCircle}" />
-                            <TextBlock Text="Identical" />
+                            <TextBlock Text="{l:T 'Identical'}" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
 
                 <Border Classes="tool-sep" Margin="0,0,10,0" />
-                <TextBlock Text="Ignore" FontSize="12.5" Classes="muted" VerticalAlignment="Center" Margin="0,2,8,2" />
-                <CheckBox Content="Whitespace" IsChecked="{Binding IgnoreWhitespace}" Margin="0,2,12,2" VerticalAlignment="Center"
-                          ToolTip.Tip="Ignore differences in spaces, tabs and indentation" />
-                <CheckBox Content="Case" IsChecked="{Binding IgnoreCase}" Margin="0,2,14,2" VerticalAlignment="Center"
-                          ToolTip.Tip="Ignore upper/lower case differences" />
-                <CheckBox Content="JSON" IsChecked="{Binding CompareAsJson}" Margin="0,2,14,2" VerticalAlignment="Center"
-                          ToolTip.Tip="Format both sides and sort keys first, so only data changes show" />
-                <CheckBox Content="Only changes" IsChecked="{Binding OnlyChanges}" Margin="0,2,10,2" VerticalAlignment="Center"
-                          ToolTip.Tip="Fold unchanged lines, keeping 3 lines of context" />
+                <TextBlock Text="{l:T 'Ignore'}" FontSize="12.5" Classes="muted" VerticalAlignment="Center" Margin="0,2,8,2" />
+                <CheckBox Content="{l:T 'Whitespace'}" IsChecked="{Binding IgnoreWhitespace}" Margin="0,2,12,2" VerticalAlignment="Center"
+                          ToolTip.Tip="{l:T 'Ignore differences in spaces, tabs and indentation'}" />
+                <CheckBox Content="{l:T 'Case'}" IsChecked="{Binding IgnoreCase}" Margin="0,2,14,2" VerticalAlignment="Center"
+                          ToolTip.Tip="{l:T 'Ignore upper/lower case differences'}" />
+                <CheckBox Content="{l:T 'JSON'}" IsChecked="{Binding CompareAsJson}" Margin="0,2,14,2" VerticalAlignment="Center"
+                          ToolTip.Tip="{l:T 'Format both sides and sort keys first, so only data changes show'}" />
+                <CheckBox Content="{l:T 'Only changes'}" IsChecked="{Binding OnlyChanges}" Margin="0,2,10,2" VerticalAlignment="Center"
+                          ToolTip.Tip="{l:T 'Fold unchanged lines, keeping 3 lines of context'}" />
 
                 <Border Classes="tool-sep" Margin="0,0,10,0" />
-                <Button Classes="btn ghost icon" Margin="0,2,2,2" Command="{Binding SwapCommand}" ToolTip.Tip="Swap sides">
+                <Button Classes="btn ghost icon" Margin="0,2,2,2" Command="{Binding SwapCommand}" ToolTip.Tip="{l:T 'Swap sides'}">
                     <PathIcon Data="{StaticResource Icon.Swap}" />
                 </Button>
                 <Button Classes="btn ghost icon" Margin="0,2,2,2" Command="{Binding CopyPatchCommand}" IsVisible="{Binding IsResultView}"
-                        ToolTip.Tip="Copy as a unified diff (patch)">
+                        ToolTip.Tip="{l:T 'Copy as a unified diff (patch)'}">
                     <PathIcon Data="{StaticResource Icon.Copy}" />
                 </Button>
                 <ProgressBar IsIndeterminate="True" Width="60" Height="3" MinWidth="0" Margin="8,0" VerticalAlignment="Center"
@@ -141,13 +142,13 @@
                                 <TextBlock Text="{Binding LeftStats}" FontSize="12" Classes="muted" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                <Button Classes="btn ghost icon" Command="{Binding OpenLeftCommand}" ToolTip.Tip="Open file (or drop one here)">
+                                <Button Classes="btn ghost icon" Command="{Binding OpenLeftCommand}" ToolTip.Tip="{l:T 'Open file (or drop one here)'}">
                                     <PathIcon Data="{StaticResource Icon.FolderOpen}" />
                                 </Button>
-                                <Button Classes="btn ghost icon" Command="{Binding PasteLeftCommand}" ToolTip.Tip="Paste from clipboard">
+                                <Button Classes="btn ghost icon" Command="{Binding PasteLeftCommand}" ToolTip.Tip="{l:T 'Paste from clipboard'}">
                                     <PathIcon Data="{StaticResource Icon.Paste}" />
                                 </Button>
-                                <Button Classes="btn ghost icon" Command="{Binding ClearLeftCommand}" ToolTip.Tip="Clear">
+                                <Button Classes="btn ghost icon" Command="{Binding ClearLeftCommand}" ToolTip.Tip="{l:T 'Clear'}">
                                     <PathIcon Data="{StaticResource Icon.Eraser}" />
                                 </Button>
                             </StackPanel>
@@ -171,13 +172,13 @@
                                 <TextBlock Text="{Binding RightStats}" FontSize="12" Classes="muted" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                <Button Classes="btn ghost icon" Command="{Binding OpenRightCommand}" ToolTip.Tip="Open file (or drop one here)">
+                                <Button Classes="btn ghost icon" Command="{Binding OpenRightCommand}" ToolTip.Tip="{l:T 'Open file (or drop one here)'}">
                                     <PathIcon Data="{StaticResource Icon.FolderOpen}" />
                                 </Button>
-                                <Button Classes="btn ghost icon" Command="{Binding PasteRightCommand}" ToolTip.Tip="Paste from clipboard">
+                                <Button Classes="btn ghost icon" Command="{Binding PasteRightCommand}" ToolTip.Tip="{l:T 'Paste from clipboard'}">
                                     <PathIcon Data="{StaticResource Icon.Paste}" />
                                 </Button>
-                                <Button Classes="btn ghost icon" Command="{Binding ClearRightCommand}" ToolTip.Tip="Clear">
+                                <Button Classes="btn ghost icon" Command="{Binding ClearRightCommand}" ToolTip.Tip="{l:T 'Clear'}">
                                     <PathIcon Data="{StaticResource Icon.Eraser}" />
                                 </Button>
                             </StackPanel>
@@ -216,7 +217,7 @@
                                VerticalScrollBarVisibility="Hidden"
                                Background="{DynamicResource Bg.Surface}" Foreground="{DynamicResource Fg.Primary}" />
                 <views:DiffOverview x:Name="SideOverview" Grid.Row="1" Grid.Column="3"
-                                    ToolTip.Tip="Overview: click or drag to jump" />
+                                    ToolTip.Tip="{l:T 'Overview: click or drag to jump'}" />
             </Grid>
 
             <!-- ======================================== INLINE -->
@@ -237,7 +238,7 @@
                                VerticalScrollBarVisibility="Hidden"
                                Background="{DynamicResource Bg.Surface}" Foreground="{DynamicResource Fg.Primary}" />
                 <views:DiffOverview x:Name="InlineOverview" Grid.Row="1" Grid.Column="1"
-                                    ToolTip.Tip="Overview: click or drag to jump" />
+                                    ToolTip.Tip="{l:T 'Overview: click or drag to jump'}" />
             </Grid>
         </Panel>
     </DockPanel>

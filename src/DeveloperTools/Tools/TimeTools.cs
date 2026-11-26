@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.Tools;
 
 public sealed record TimeParse(DateTimeOffset Value, string Interpretation);
@@ -108,15 +110,15 @@ public static partial class TimeTools
         var local = TimeZoneInfo.ConvertTime(value, zone);
         return
         [
-            ("Unix seconds", value.ToUnixTimeSeconds().ToString(inv)),
-            ("Unix milliseconds", value.ToUnixTimeMilliseconds().ToString(inv)),
-            ("ISO 8601 (UTC)", utc.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", inv)),
+            (Loc.T("Unix seconds"), value.ToUnixTimeSeconds().ToString(inv)),
+            (Loc.T("Unix milliseconds"), value.ToUnixTimeMilliseconds().ToString(inv)),
+            (Loc.T("ISO 8601 (UTC)"), utc.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", inv)),
             ($"ISO 8601 ({ShortZone(zone)})", local.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz", inv)),
-            ("RFC 1123 (HTTP)", utc.ToString("r", inv)),
+            (Loc.T("RFC 1123 (HTTP)"), utc.ToString("r", inv)),
             ("Readable", local.ToString("dddd, d MMMM yyyy  HH:mm:ss", inv) + "  " + local.ToString("zzz", inv)),
             ("Relative", Relative(value, now)),
             ("SQL", local.ToString("yyyy-MM-dd HH:mm:ss", inv)),
-            ("Day / week", $"Day {local.DayOfYear} of the year, ISO week {ISOWeek.GetWeekOfYear(local.DateTime)}"),
+            (Loc.T("Day / week"), Loc.F("Day {0} of the year, ISO week {1}", local.DayOfYear, ISOWeek.GetWeekOfYear(local.DateTime))),
             (".NET ticks (UTC)", utc.UtcTicks.ToString(inv))
         ];
     }

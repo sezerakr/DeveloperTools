@@ -46,6 +46,7 @@ public sealed class PageHost : Panel
 
     private static Control Create(PageViewModel page) => page switch
     {
+        HomePageViewModel => new HomePage(),
         MarkdownPageViewModel => new MarkdownPage(),
         JsonPageViewModel => new JsonPage(),
         DiffPageViewModel => new DiffPage(),

@@ -47,6 +47,9 @@ public static class AppServices
 
     public static bool IsBrowser => OperatingSystem.IsBrowser();
 
+    /// <summary>Started with --uninstall: show only the uninstall window.</summary>
+    public static bool UninstallMode { get; set; }
+
     /// <summary>Tool to open at startup ("json", "diff", …), e.g. from a #json link in the browser.</summary>
     public static string? StartPage { get; set; }
 

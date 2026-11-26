@@ -14,6 +14,8 @@ internal static class Program
         var test = Array.IndexOf(args, "--selftest");
         if (test >= 0)
             SelfTest.LogPath = test + 1 < args.Length ? args[test + 1] : "selftest.log";
+        if (Array.IndexOf(args, "--uninstall") >= 0)
+            DeveloperTools.Services.AppServices.UninstallMode = true;
         var page = Array.IndexOf(args, "--page");
         if (page >= 0 && page + 1 < args.Length)
             DeveloperTools.Services.AppServices.StartPage = args[page + 1];
@@ -22,6 +24,12 @@ internal static class Program
         DeveloperTools.Services.UpdateService.Enabled = SelfTest.LogPath is null;
         DeveloperTools.Services.UpdateService.CleanUpOldFiles();
 #endif
+        // Silent uninstall (scripts, Windows "QuietUninstallString"): no window at all.
+        if (DeveloperTools.Services.AppServices.UninstallMode && Array.IndexOf(args, "--quiet") >= 0)
+        {
+            DeveloperTools.Services.UninstallService.Uninstall(keepSettings: Array.IndexOf(args, "--remove-settings") < 0);
+            return 0;
+        }
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 

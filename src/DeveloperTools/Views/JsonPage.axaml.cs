@@ -186,7 +186,7 @@ public partial class JsonPage : UserControl
     private void UpdateCaret()
     {
         var caret = Editor.TextArea.Caret;
-        CaretText.Text = $"Ln {caret.Line}, Col {caret.Column}";
+        CaretText.Text = DeveloperTools.Localization.Loc.F("Ln {0}, Col {1}", caret.Line, caret.Column);
     }
 
     private void ApplyTheme()

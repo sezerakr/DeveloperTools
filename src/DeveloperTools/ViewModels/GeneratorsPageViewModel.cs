@@ -11,6 +11,8 @@ using CommunityToolkit.Mvvm.Input;
 using DeveloperTools.Services;
 using DeveloperTools.Tools;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.ViewModels;
 
 public enum GeneratorTab
@@ -75,8 +77,8 @@ public partial class GeneratorsPageViewModel : PageViewModel
         GenerateQr();
     }
 
-    public override string Title => "Generators";
-    public override string Subtitle => "Passwords, keys, UUIDs, test data and QR codes";
+    public override string Title => Loc.T("Generators");
+    public override string Subtitle => Loc.T("Passwords, keys, UUIDs, test data and QR codes");
 
     [ObservableProperty]
     private GeneratorTab _tab = GeneratorTab.Password;
@@ -196,7 +198,7 @@ public partial class GeneratorsPageViewModel : PageViewModel
             for (var i = 0; i < Count(KeyCount, 100); i++)
                 Secrets.Add(new CopyableValue(Prefix + SecretGenerator.Key(KeyFormat.Format, size, CustomChars), Copy));
             var bits = SecretGenerator.KeyEntropy(KeyFormat.Format, size, CustomChars);
-            KeyInfo = $"{bits:0} bits of randomness";
+            KeyInfo = Loc.F("{0:0} bits of randomness", bits);
             KeyError = null;
         }
         catch (ArgumentException ex)
@@ -323,7 +325,7 @@ public partial class GeneratorsPageViewModel : PageViewModel
         {
             QrImage = null;
             _qrPng = null;
-            QrInfo = QrMode == QrMode.Wifi ? "Enter the network name." : "Enter text or a link.";
+            QrInfo = QrMode == QrMode.Wifi ? Loc.T("Enter the network name.") : Loc.T("Enter text or a link.");
             return;
         }
 
@@ -332,13 +334,13 @@ public partial class GeneratorsPageViewModel : PageViewModel
             _qrPng = QrCode.Png(payload, QrEcc[0], (int)QrScale, dark: false);
             using var stream = new MemoryStream(_qrPng);
             QrImage = new Bitmap(stream);
-            QrInfo = $"{QrImage.PixelSize.Width} × {QrImage.PixelSize.Height} px  ·  {payload.Length:N0} characters  ·  error correction {QrEcc}";
+            QrInfo = Loc.F("{0} × {1} px  ·  {2:N0} characters  ·  error correction {3}", QrImage.PixelSize.Width, QrImage.PixelSize.Height, payload.Length, QrEcc);
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or QRCoder.Exceptions.DataTooLongException)
         {
             QrImage = null;
             _qrPng = null;
-            QrInfo = "Too much text for a QR code. Shorten it or use a lower error correction level.";
+            QrInfo = Loc.T("Too much text for a QR code. Shorten it or use a lower error correction level.");
         }
     }
 
@@ -354,7 +356,7 @@ public partial class GeneratorsPageViewModel : PageViewModel
     {
         if (_qrPng is null)
             return;
-        var file = await _dialogs.SaveFileAsync("Save QR code", "qr-code.png", "png", "PNG image");
+        var file = await _dialogs.SaveFileAsync(Loc.T("Save QR code"), "qr-code.png", "png", Loc.T("PNG image"));
         if (file is not null)
             await StorageFiles.WriteBytesAsync(file, _qrPng);
     }

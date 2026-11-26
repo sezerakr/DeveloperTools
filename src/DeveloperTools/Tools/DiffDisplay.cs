@@ -70,7 +70,7 @@ public static class DiffDisplay
         return segments;
     }
 
-    private static string FoldText(int count) => $"⋯  {count:N0} unchanged line{(count == 1 ? "" : "s")}";
+    private static string FoldText(int count) => Localization.Loc.F("⋯  {0:N0} unchanged lines", count);
 
     public static (DiffDocument left, DiffDocument right) SideBySide(DiffResult r, bool onlyChanges)
     {

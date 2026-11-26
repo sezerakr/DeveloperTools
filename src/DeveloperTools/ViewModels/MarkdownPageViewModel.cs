@@ -13,6 +13,8 @@ using CommunityToolkit.Mvvm.Input;
 using DeveloperTools.Models;
 using DeveloperTools.Services;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.ViewModels;
 
 public sealed record SearchMatch(int Offset, int Length);
@@ -73,8 +75,8 @@ public partial class MarkdownPageViewModel : PageViewModel
         };
     }
 
-    public override string Title => "Markdown";
-    public override string Subtitle => "Browse, preview and edit markdown files";
+    public override string Title => Loc.T("Markdown");
+    public override string Subtitle => Loc.T("Browse, preview and edit markdown files");
 
     public event EventHandler? OpenSettingsRequested;
 
@@ -105,7 +107,7 @@ public partial class MarkdownPageViewModel : PageViewModel
         var path = Path.TrimEndingDirectorySeparator(Path.GetFullPath(picked));
         if (_settings.Current.MarkdownFolders.Any(f => string.Equals(f, path, StringComparison.OrdinalIgnoreCase)))
         {
-            StatusMessage = $"{Path.GetFileName(path)} is already in the explorer.";
+            StatusMessage = Loc.F("{0} is already in the explorer.", Path.GetFileName(path));
             return;
         }
 
@@ -128,7 +130,7 @@ public partial class MarkdownPageViewModel : PageViewModel
     {
         if (!await ConfirmLeaveAsync())
             return;
-        var file = await _dialogs.OpenFileAsync("Open markdown file", "Markdown", "*.md", "*.markdown", "*.mdx", "*.txt");
+        var file = await _dialogs.OpenFileAsync(Loc.T("Open markdown file"), "Markdown", "*.md", "*.markdown", "*.mdx", "*.txt");
         if (file is null)
             return;
 
@@ -150,7 +152,7 @@ public partial class MarkdownPageViewModel : PageViewModel
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException)
         {
-            StatusMessage = $"Could not open {file.Name}: {e.Message}";
+            StatusMessage = Loc.F("Could not open {0}: {1}", file.Name, e.Message);
         }
     }
 
@@ -159,7 +161,7 @@ public partial class MarkdownPageViewModel : PageViewModel
     {
         if (CurrentFilePath is null)
             return;
-        var file = await _dialogs.SaveFileAsync("Save markdown as", CurrentFileName ?? "untitled.md", "md", "Markdown");
+        var file = await _dialogs.SaveFileAsync(Loc.T("Save markdown as"), CurrentFileName ?? "untitled.md", "md", "Markdown");
         if (file is null)
             return;
         try
@@ -181,7 +183,7 @@ public partial class MarkdownPageViewModel : PageViewModel
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException)
         {
-            StatusMessage = $"Save failed: {e.Message}";
+            StatusMessage = Loc.F("Save failed: {0}", e.Message);
         }
     }
 
@@ -261,7 +263,7 @@ public partial class MarkdownPageViewModel : PageViewModel
         catch (Exception e)
         {
             // Never let a failure here disappear silently (fire-and-forget call).
-            StatusMessage = $"Could not open {Path.GetFileName(path)}: {e.Message}";
+            StatusMessage = Loc.F("Could not open {0}: {1}", Path.GetFileName(path), e.Message);
             System.Diagnostics.Trace.WriteLine(e);
         }
     }
@@ -300,7 +302,7 @@ public partial class MarkdownPageViewModel : PageViewModel
         _suppressSelection = false;
 
         var fileCount = MarkdownTree.Flatten(Roots).Count(n => n.IsFile);
-        StatusMessage = HasFolders ? $"{fileCount} markdown file{(fileCount == 1 ? "" : "s")} in {Roots.Count} folder{(Roots.Count == 1 ? "" : "s")}" : null;
+        StatusMessage = HasFolders ? Loc.F("{0} markdown files in {1} folders", fileCount, Roots.Count) : null;
     }
 
     public async Task<bool> OpenFileAsync(string path)
@@ -318,7 +320,7 @@ public partial class MarkdownPageViewModel : PageViewModel
         }
         catch (Exception e)
         {
-            StatusMessage = $"Could not open {Path.GetFileName(path)}: {e.Message}";
+            StatusMessage = Loc.F("Could not open {0}: {1}", Path.GetFileName(path), e.Message);
             RestoreSelection();
             return false;
         }
@@ -388,7 +390,7 @@ public partial class MarkdownPageViewModel : PageViewModel
         }
         catch (Exception e)
         {
-            StatusMessage = $"Save failed: {e.Message}";
+            StatusMessage = Loc.F("Save failed: {0}", e.Message);
             return false;
         }
     }
@@ -410,7 +412,7 @@ public partial class MarkdownPageViewModel : PageViewModel
                      ?? (AppServices.IsBrowser ? ScratchFolder : null);
         if (folder is null || !Directory.Exists(folder))
         {
-            StatusMessage = "None of the configured folders exist.";
+            StatusMessage = Loc.T("None of the configured folders exist.");
             return;
         }
 
@@ -434,7 +436,7 @@ public partial class MarkdownPageViewModel : PageViewModel
         }
         catch (Exception e)
         {
-            StatusMessage = $"Could not create file: {e.Message}";
+            StatusMessage = Loc.F("Could not create file: {0}", e.Message);
             return;
         }
 
@@ -447,18 +449,18 @@ public partial class MarkdownPageViewModel : PageViewModel
     private bool HasDocumentCheck() => HasDocument;
 
     [RelayCommand(CanExecute = nameof(HasDocumentCheck))]
-    private async Task Delete()
-    {
-        if (CurrentFilePath is not { } path)
-            return;
+    private Task Delete() => CurrentFilePath is { } path ? DeleteFileAsync(path) : Task.CompletedTask;
 
+    /// <summary>Deletes a file (Recycle Bin on Windows) after confirmation. Used by the toolbar and the explorer menu.</summary>
+    public async Task DeleteFileAsync(string path)
+    {
         var recycle = OperatingSystem.IsWindows();
         var ok = await _dialogs.ConfirmAsync(
-            "Delete file",
+            Loc.T("Delete file"),
             recycle
-                ? $"Move \"{Path.GetFileName(path)}\" to the Recycle Bin?"
-                : $"Permanently delete \"{Path.GetFileName(path)}\"? This cannot be undone.",
-            "Delete",
+                ? Loc.F("Move \"{0}\" to the Recycle Bin?", Path.GetFileName(path))
+                : Loc.F("Permanently delete \"{0}\"? This cannot be undone.", Path.GetFileName(path)),
+            Loc.T("Delete"),
             danger: true);
         if (!ok)
             return;
@@ -474,15 +476,96 @@ public partial class MarkdownPageViewModel : PageViewModel
         }
         catch (Exception e)
         {
-            StatusMessage = $"Delete failed: {e.Message}";
+            StatusMessage = Loc.F("Delete failed: {0}", e.Message);
             return;
         }
 
-        CloseDocument();
+        if (string.Equals(CurrentFilePath, path, StringComparison.OrdinalIgnoreCase))
+            CloseDocument();
         await RefreshAsync();
-        StatusMessage = $"Deleted {Path.GetFileName(path)}";
+        StatusMessage = Loc.F("Deleted {0}", Path.GetFileName(path));
     }
 
+    /// <summary>
+    /// Renames a file. Warns when the extension changes (a file that is no longer .md leaves the explorer),
+    /// saves pending edits first, and keeps the renamed file open.
+    /// </summary>
+    public async Task RenameFileAsync(string path)
+    {
+        if (!File.Exists(path))
+            return;
+        var folder = Path.GetDirectoryName(path)!;
+        var oldName = Path.GetFileName(path);
+
+        var name = await _dialogs.PromptAsync(
+            Loc.T("Rename file"),
+            Loc.T("Enter a new name for the file."),
+            oldName,
+            Loc.T("Rename"),
+            input => ValidateRename(folder, oldName, input));
+        if (name is null || name == oldName)
+            return;
+
+        var oldExt = Path.GetExtension(oldName);
+        var newExt = Path.GetExtension(name);
+        if (!string.Equals(oldExt, newExt, StringComparison.OrdinalIgnoreCase))
+        {
+            var stillMarkdown = MarkdownTree.IsMarkdown(name);
+            var message = newExt.Length == 0
+                ? Loc.F("\"{0}\" has no extension. It will no longer be treated as Markdown and will disappear from the explorer.", name)
+                : stillMarkdown
+                    ? Loc.F("The extension changes from {0} to {1}.", oldExt, newExt)
+                    : Loc.F("The extension changes from {0} to {1}. The file will no longer be treated as Markdown and will disappear from the explorer.", oldExt, newExt);
+            if (!await _dialogs.ConfirmAsync(Loc.T("Change the extension?"), message, Loc.T("Rename anyway"), danger: !stillMarkdown))
+                return;
+        }
+
+        var isCurrent = string.Equals(CurrentFilePath, path, StringComparison.OrdinalIgnoreCase);
+        if (isCurrent && IsDirty && !await SaveCoreAsync())
+            return;
+
+        var target = Path.Combine(folder, name);
+        try
+        {
+            File.Move(path, target);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            StatusMessage = Loc.F("Rename failed: {0}", e.Message);
+            return;
+        }
+
+        if (isCurrent)
+        {
+            if (MarkdownTree.IsMarkdown(target))
+                CurrentFilePath = target;
+            else
+                CloseDocument();
+        }
+        await RefreshAsync();
+        if (isCurrent && CurrentFilePath is not null && FindNode(CurrentFilePath) is { } node)
+        {
+            _suppressSelection = true;
+            SelectedNode = node;
+            _suppressSelection = false;
+        }
+        StatusMessage = Loc.F("Renamed to {0}", name);
+    }
+
+    private static string? ValidateRename(string folder, string oldName, string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return Loc.T("Enter a name.");
+        if (input.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || input.Trim('.', ' ').Length == 0)
+            return Loc.T("The name contains characters that are not allowed in file names.");
+        var sameFile = string.Equals(input, oldName, StringComparison.OrdinalIgnoreCase); // case-only rename is fine
+        if (!sameFile && (File.Exists(Path.Combine(folder, input)) || Directory.Exists(Path.Combine(folder, input))))
+            return Loc.T("A file or folder with this name already exists here.");
+        return null;
+    }
+
+    /// <summary>Shows a file or folder in the system file manager.</summary>
+    public void RevealPath(string path) => _dialogs.RevealInExplorer(path);
     [RelayCommand(CanExecute = nameof(HasDocumentCheck))]
     private void Reveal()
     {
@@ -640,7 +723,7 @@ public partial class MarkdownPageViewModel : PageViewModel
         else if (File.Exists(path) || Directory.Exists(path))
             _dialogs.RevealInExplorer(path);
         else
-            StatusMessage = $"Link target not found: {target}";
+            StatusMessage = Loc.F("Link target not found: {0}", target);
     }
 
     // ---------------------------------------------------------------- helpers
@@ -691,11 +774,11 @@ public partial class MarkdownPageViewModel : PageViewModel
     private static string? ValidateNewFileName(string folder, string input)
     {
         if (string.IsNullOrWhiteSpace(input))
-            return "Enter a file name.";
+            return Loc.T("Enter a file name.");
         if (input.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-            return "The name contains characters that are not allowed in file names.";
+            return Loc.T("The name contains characters that are not allowed in file names.");
         if (File.Exists(Path.Combine(folder, NormalizeFileName(input))))
-            return "A file with that name already exists.";
+            return Loc.T("A file with that name already exists.");
         return null;
     }
 }

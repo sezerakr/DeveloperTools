@@ -80,11 +80,14 @@ public partial class MainWindow : Window
     {
         base.OnDataContextChanged(e);
         if (DataContext is MainWindowViewModel vm)
+        {
             vm.RestartRequested += (_, _) =>
             {
                 _restartAfterClose = true;
                 Close();
             };
+            vm.QuitRequested += (_, _) => Close();
+        }
     }
 
     // ------------------------------------------------------------------ placement

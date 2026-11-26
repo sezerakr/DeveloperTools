@@ -10,6 +10,8 @@ using DeveloperTools.Markdown;
 using DeveloperTools.Services;
 using DeveloperTools.Tools;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.ViewModels;
 
 public enum DiffView
@@ -36,8 +38,8 @@ public partial class DiffPageViewModel : PageViewModel
         settings.Changed += (_, _) => OnPropertyChanged(nameof(EditorFontSize));
     }
 
-    public override string Title => "Diff";
-    public override string Subtitle => "Compare two texts, files or JSON documents";
+    public override string Title => Loc.T("Diff");
+    public override string Subtitle => Loc.T("Compare two texts, files or JSON documents");
 
     public TextDocument LeftDocument { get; } = new();
     public TextDocument RightDocument { get; } = new();
@@ -178,11 +180,11 @@ public partial class DiffPageViewModel : PageViewModel
                     {
                         left = l;
                         right = r;
-                        jsonNote = "Compared as JSON: both sides were formatted and keys sorted, so only real data changes show.";
+                        jsonNote = Loc.T("Compared as JSON: both sides were formatted and keys sorted, so only real data changes show.");
                     }
                     else
                     {
-                        jsonNote = $"{(l is null ? LeftName : RightName)} is not valid JSON, so the texts were compared as is.";
+                        jsonNote = Loc.F("{0} is not valid JSON, so the texts were compared as is.", (l is null ? LeftName : RightName));
                     }
                 }
 
@@ -291,7 +293,7 @@ public partial class DiffPageViewModel : PageViewModel
             return;
         var patch = DiffEngine.UnifiedPatch(Result, "a/" + LeftName, "b/" + RightName);
         await _dialogs.CopyToClipboardAsync(patch);
-        Note = "Unified diff (patch) copied to the clipboard.";
+        Note = Loc.T("Unified diff (patch) copied to the clipboard.");
     }
 
     [RelayCommand]
@@ -316,14 +318,14 @@ public partial class DiffPageViewModel : PageViewModel
             var path = StorageFiles.Describe(file);
             if (await StorageFiles.SizeAsync(file) > MaxFileBytes)
             {
-                Note = $"\"{name}\" is larger than 50 MB, too big to compare here.";
+                Note = Loc.F("\"{0}\" is larger than 50 MB, too big to compare here.", name);
                 return;
             }
 
             var text = await StorageFiles.ReadTextAsync(file);
             if (text.IndexOf('\0') >= 0)
             {
-                Note = $"\"{name}\" looks like a binary file. Only text files can be compared.";
+                Note = Loc.F("\"{0}\" looks like a binary file. Only text files can be compared.", name);
                 return;
             }
 
@@ -348,7 +350,7 @@ public partial class DiffPageViewModel : PageViewModel
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            Note = "Could not open the file: " + ex.Message;
+            Note = Loc.T("Could not open the file: ") + ex.Message;
         }
     }
 

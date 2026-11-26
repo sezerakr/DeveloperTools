@@ -42,7 +42,9 @@ generates **C#, Kotlin or TypeScript** classes from your sample, and converts to
 Point the desktop app at the folders where you keep `.md` files and browse them in an explorer. Read them in
 a clean preview, edit with a toolbar and shortcuts, or use split view to do both. Code blocks are
 highlighted for C#, Kotlin, JavaScript, Python, SQL and more, task checkboxes can be ticked right in the
-preview, and Ctrl+F marks every match on the scrollbar. In the browser you open and save single files instead.
+preview, and Ctrl+F marks every match on the scrollbar. The folder button adds a whole folder (all its subfolders
+and `.md` files); the **+** button opens or creates a single file. Right-click a file to open, rename (F2), show it in
+Explorer or delete it; changing the extension warns you first. In the browser you open and save single files instead.
 
 ![Editing release notes with a live preview](docs/screenshots/markdown.png)
 
@@ -81,8 +83,18 @@ and counts characters, words and reading time.
 
 ![Converting a Unix timestamp](docs/screenshots/timestamp.png)
 
+### English and Turkish (and any language you add)
+
+The whole interface is available in English and Turkish; pick one in Settings → General, or leave it on
+**System language**. Technical terms such as JSON, Regex or Base64 stay as they are. Translations are plain JSON
+files that map the English text to the translation, for example `"Copy all": "Tümünü kopyala"`. **Edit translations**
+copies the file to your settings folder (`%AppData%\DeveloperTools\lang`) so you can change any text in a text
+editor; your edits survive updates. Drop in another file such as `de.json` (with a `"_language": "Deutsch"` line)
+and a new language appears in the list.
+
 ### Small things that add up
 
+- **Home** shows just your favorite tools. Click the star next to a tool's name to add it; the app then opens on Home.
 - **Ctrl+K** opens a command palette: type a few letters to jump to any tool or action.
 - A **light and dark theme**, switchable from the top-right corner.
 - **Snippets** let you save an input (a regex, a JSON sample, some text) under a name and bring it back later.
@@ -106,6 +118,15 @@ The desktop versions are compiled to native code. They start in about a fifth of
 downloads it in the background, checks the file's SHA-256 against the one GitHub publishes, and swaps it in. There is
 no installer and nothing to click; you'll see a small "restart to use it" note, or the new version simply opens next
 time. You can turn this off in Settings → General. The web version is always the latest one.
+
+**Your settings are safe.** They live per user in `%AppData%\DeveloperTools` (Linux: `~/.config/DeveloperTools`),
+separate from the program. Updates only replace program files, new settings get sensible defaults, and a damaged
+settings file is backed up (`settings.json.bak`) instead of being thrown away.
+
+**Uninstalling.** On Windows, DeveloperTools appears in *Settings → Apps* like any other app; you can also use
+Settings → General → Uninstall in the app. On Linux run `uninstall.sh`. You are asked whether to keep your settings
+and snippets. Only the app's own files are removed. For scripts: `DeveloperTools --uninstall --quiet`
+(add `--remove-settings` to delete them too).
 
 ### What's different in the browser
 

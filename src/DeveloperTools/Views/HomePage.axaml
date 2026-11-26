@@ -1,0 +1,96 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:DeveloperTools.Localization"
+             xmlns:vm="using:DeveloperTools.ViewModels"
+             xmlns:c="using:DeveloperTools.Converters"
+             x:Class="DeveloperTools.Views.HomePage"
+             x:DataType="vm:HomePageViewModel">
+
+    <UserControl.Resources>
+        <!-- A tool card: click to open, star to add/remove from favorites. -->
+        <DataTemplate x:Key="ToolCardTemplate" DataType="vm:ToolCard">
+            <Grid Width="280" Height="116" Margin="0,0,14,14">
+                <Button Classes="toolcard" Command="{Binding OpenCommand}">
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,*">
+                        <Border Width="38" Height="38" CornerRadius="9" Background="{DynamicResource Bg.Subtle}"
+                                BorderBrush="{DynamicResource Line}" BorderThickness="1" VerticalAlignment="Top">
+                            <PathIcon Width="18" Height="18" Foreground="{DynamicResource Fg.Primary}"
+                                      Data="{Binding Icon, Converter={x:Static c:ResourceGeometry.Instance}}" />
+                        </Border>
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" Margin="12,0,30,0"
+                                   Foreground="{DynamicResource Fg.Primary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Description}" FontSize="12.5" Margin="0,10,0,0"
+                                   Classes="secondary" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                </Button>
+                <Button Classes="btn ghost icon" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,8,0"
+                        Command="{Binding ToggleFavoriteCommand}" ToolTip.Tip="{Binding StarTip}">
+                    <Panel>
+                        <PathIcon Data="{StaticResource Icon.Star}" Foreground="{DynamicResource Dirty}" IsVisible="{Binding IsFavorite}" />
+                        <PathIcon Data="{StaticResource Icon.StarOutline}" IsVisible="{Binding !IsFavorite}" />
+                    </Panel>
+                </Button>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="Button.toolcard">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="16,14" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border x:Name="Card" Background="{DynamicResource Bg.Surface}" BorderBrush="{DynamicResource Line}"
+                            BorderThickness="1" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Content="{TemplateBinding Content}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.toolcard:pointerover /template/ Border#Card">
+            <Setter Property="BorderBrush" Value="{DynamicResource Line.Strong}" />
+            <Setter Property="Background" Value="{DynamicResource Bg.Subtle}" />
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="28,24,28,40" Spacing="8">
+            <!-- favorites -->
+            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding HasFavorites}" Margin="0,0,0,6">
+                <TextBlock Classes="label" Text="{l:T 'FAVORITES'}" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Classes="btn ghost xs" Command="{Binding ToggleEditingCommand}"
+                        Content="{l:T 'Add or remove'}" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding Favorites}" ItemTemplate="{StaticResource ToolCardTemplate}"
+                          IsVisible="{Binding HasFavorites}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+
+            <!-- no favorites yet -->
+            <StackPanel IsVisible="{Binding HasNoFavorites}" Spacing="4" Margin="0,0,0,12">
+                <TextBlock Classes="h3" Text="{l:T 'Pick your favorite tools'}" />
+                <TextBlock Classes="secondary" FontSize="13" TextWrapping="Wrap"
+                           Text="{l:T 'Tap the star on a tool to pin it here. Home then opens with just your favorites.'}" />
+            </StackPanel>
+
+            <!-- the other tools -->
+            <TextBlock Classes="label" Text="{l:T 'ALL TOOLS'}" Margin="0,10,0,6" IsVisible="{Binding ShowOthers}" />
+            <ItemsControl ItemsSource="{Binding Others}" ItemTemplate="{StaticResource ToolCardTemplate}"
+                          IsVisible="{Binding ShowOthers}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

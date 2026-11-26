@@ -12,6 +12,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
+using DeveloperTools.Localization;
+
 namespace DeveloperTools.Services;
 
 public enum UpdateState
@@ -104,7 +106,7 @@ public sealed class UpdateService
 
         try
         {
-            Set(UpdateState.Checking, "Checking for updates…");
+            Set(UpdateState.Checking, Loc.T("Checking for updates…"));
             using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
             http.DefaultRequestHeaders.UserAgent.ParseAdd("DeveloperTools-Updater");
             http.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
@@ -116,24 +118,24 @@ public sealed class UpdateService
             var release = ParseRelease(json);
             if (release is null || release.Version <= CurrentVersion)
             {
-                Set(UpdateState.UpToDate, $"You have the latest version ({Format(CurrentVersion)}).");
+                Set(UpdateState.UpToDate, Loc.F("You have the latest version ({0}).", Format(CurrentVersion)));
                 return;
             }
 
             var asset = release.Assets.FirstOrDefault(a => PlatformAsset is { } suffix && a.Name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
             if (asset is null)
             {
-                Set(UpdateState.Failed, $"Version {Format(release.Version)} has no download for this system.");
+                Set(UpdateState.Failed, Loc.F("Version {0} has no download for this system.", Format(release.Version)));
                 return;
             }
 
             if (!CanWrite(AppDirectory))
             {
-                Set(UpdateState.Failed, $"Version {Format(release.Version)} is available, but this folder is read-only. Download it from GitHub.");
+                Set(UpdateState.Failed, Loc.F("Version {0} is available, but this folder is read-only. Download it from GitHub.", Format(release.Version)));
                 return;
             }
 
-            Set(UpdateState.Downloading, $"Downloading version {Format(release.Version)}…");
+            Set(UpdateState.Downloading, Loc.F("Downloading version {0}…", Format(release.Version)));
             var work = Path.Combine(Path.GetTempPath(), "DeveloperTools-update", Format(release.Version));
             if (Directory.Exists(work))
                 Directory.Delete(work, recursive: true);
@@ -150,7 +152,7 @@ public sealed class UpdateService
                 var actual = Convert.ToHexStringLower(await SHA256.HashDataAsync(stream).ConfigureAwait(false));
                 if (!string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase))
                 {
-                    Set(UpdateState.Failed, "The download was damaged (checksum mismatch). It will be tried again later.");
+                    Set(UpdateState.Failed, Loc.T("The download was damaged (checksum mismatch). It will be tried again later."));
                     return;
                 }
             }
@@ -161,7 +163,7 @@ public sealed class UpdateService
 
             try { Directory.Delete(work, recursive: true); } catch { /* temp folder */ }
             InstalledVersion = release.Version;
-            Set(UpdateState.Installed, $"Version {Format(release.Version)} is installed. Restart to use it.");
+            Set(UpdateState.Installed, Loc.F("Version {0} is installed. Restart to use it.", Format(release.Version)));
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException
                                        or UnauthorizedAccessException or JsonException or InvalidDataException)
