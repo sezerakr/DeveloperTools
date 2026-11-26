@@ -482,10 +482,12 @@ public partial class MarkdownPage : UserControl
         RestoreScroll(savedOffset);
     }
 
+    // In split mode the preview follows the editor only when the change came from the editor (typing there).
+    // A change made in the preview (ticking a task) keeps the reader where they are.
     private void RestoreScroll(Vector savedOffset) =>
         Dispatcher.UIThread.Post(() =>
         {
-            if (_vm?.ViewMode == ViewMode.Split)
+            if (_vm?.ViewMode == ViewMode.Split && Editor.TextArea.IsKeyboardFocusWithin)
                 SyncPreviewScroll();
             else
                 PreviewScroll.Offset = savedOffset;
