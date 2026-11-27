@@ -400,6 +400,16 @@ public sealed class MarkdownRenderer
     /// </summary>
     private static void AllowTextSelection(ScrollViewer scroller)
     {
+        // Wide content (long code lines, wide tables): keep the scrollbar visible so it doesn't look cut off,
+        // and leave room below the content so the bar doesn't cover the last line.
+        scroller.AllowAutoHide = false;
+        scroller.ScrollChanged += (_, _) =>
+        {
+            var room = scroller.Extent.Width > scroller.Viewport.Width + 0.5 ? 14 : 0;
+            if (scroller.Padding.Bottom != room)
+                scroller.Padding = new Thickness(0, 0, 0, room);
+        };
+
         scroller.TemplateApplied += (_, e) =>
         {
             if (e.NameScope.Find<Avalonia.Controls.Presenters.ScrollContentPresenter>("PART_ContentPresenter") is not { } presenter)

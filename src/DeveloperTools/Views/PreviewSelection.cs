@@ -94,8 +94,7 @@ public sealed class PreviewSelection
         }
         else if (e.ClickCount >= 3)
         {
-            _anchor = (hit.Block, 0);
-            _focus = (hit.Block, TextLength(_blocks[hit.Block]));
+            SelectLine(hit);
         }
         else
         {
@@ -287,6 +286,29 @@ public sealed class PreviewSelection
         int start = hit.Pos, end = hit.Pos;
         while (start > 0 && IsWord(text[start - 1])) start--;
         while (end < text.Length && IsWord(text[end])) end++;
+        _anchor = (hit.Block, start);
+        _focus = (hit.Block, end);
+    }
+
+    /// <summary>Triple-click: the line as shown (a long paragraph wraps into several lines).</summary>
+    private void SelectLine((int Block, int Pos) hit)
+    {
+        var block = _blocks[hit.Block];
+        var text = TextOf(block);
+        int start = 0, end = text.Length;
+        foreach (var line in block.TextLayout.TextLines)
+        {
+            var lineEnd = line.FirstTextSourceIndex + line.Length;
+            if (hit.Pos < lineEnd || ReferenceEquals(line, block.TextLayout.TextLines[^1]))
+            {
+                start = Math.Clamp(line.FirstTextSourceIndex, 0, text.Length);
+                end = Math.Clamp(lineEnd, start, text.Length);
+                break;
+            }
+        }
+
+        while (end > start && char.IsWhiteSpace(text[end - 1]))
+            end--; // not the line break or the space the line wrapped at
         _anchor = (hit.Block, start);
         _focus = (hit.Block, end);
     }
